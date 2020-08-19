@@ -57,7 +57,7 @@ end
 def quasiquote_transform(args, env)
   fn = ->(x){
     if x.class == List && x.car == :unquote
-      call(cons(:eval, x.cdr), env)
+      jcall(cons(:eval, x.cdr), env)
     elsif x.class == List
       map(fn, x)
     else
@@ -76,11 +76,11 @@ $env.put(:eval, ->(env, args) {
 
              case cmd
              when :if
-               v = call([:eval, fn[1]], env)
+               v = jcall([:eval, fn[1]], env)
                if v
-                 call([:eval, fn[2]], env)
+                 jcall([:eval, fn[2]], env)
                else
-                 call([:eval, fn[3]], env)
+                 jcall([:eval, fn[3]], env)
                end
 
              when :quote
@@ -88,7 +88,7 @@ $env.put(:eval, ->(env, args) {
 
              when :def  #TODO: push scope
                sym = fn[1]
-               val = call([:eval, fn[2]], env)
+               val = jcall([:eval, fn[2]], env)
                env.put(sym, val)
                val
 
@@ -110,11 +110,11 @@ $env.put(:eval, ->(env, args) {
              else
                if env.get(fn.car).class == Macro
                  env.get(fn.car).call(env, fn.cdr)
-                 call([:eval, env.get(fn.car).call(env, fn.cdr)], env)
+                 jcall([:eval, env.get(fn.car).call(env, fn.cdr)], env)
                else
                  fn = List.new(cons(:quote, fn.car), fn.cdr)
                  mapped_fn = map(->(x){call([:eval, x], env)}, fn)
-                 call(mapped_fn, env)
+                 jcall(mapped_fn, env)
                end
              end
            elsif fn.class == Symbol
@@ -157,6 +157,6 @@ $env.put(:cons, ->(env, args) {
 
 f = File.open("tmp.jsp")
 for x in 0...4
-  x = call([:eval, call([:read, f], $env)], $env)
+  x = jcall([:eval, jcall([:read, f], $env)], $env)
   puts x
 end

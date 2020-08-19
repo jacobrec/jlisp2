@@ -5,11 +5,6 @@ def jcall(sexp, env)
   cmd = sexp.car
   env.get(cmd).call(env, sexp.cdr)
 end
-def call(sexp, env)
-  sexp = sexp.to_list if sexp.class == Array
-  cmd = sexp.car
-  env.get(cmd).call(env, sexp.cdr)
-end
 
 def read_while(src, cond)
   str = ""
@@ -24,10 +19,10 @@ end
 
 $env.put(:read, ->(env, args) {
           src = (args && args[0]) || STDIN
-          c = call([:peekchar, src], env)
+          c = jcall([:peekchar, src], env)
           fn = env.get(:readtable).get(c)
           fn = :readsymbol if fn.nil?
-          res = call([fn, src], env)
+          res = jcall([fn, src], env)
           res
 })
 
@@ -57,8 +52,8 @@ $env.put(:readsymbol, ->(env, args) {
 })
 
 $env.put(:skip1read, ->(env, args) {
-          call(cons(:skip1, args), env)
-          call(cons(:read, args), env)
+          jcall(cons(:skip1, args), env)
+          jcall(cons(:read, args), env)
 })
 
 $env.put(:skip1, ->(env, args) {
@@ -70,7 +65,7 @@ $env.put(:readsexp, ->(env, args) {
           mdone = false
           items = []
 
-          call(cons(:skip1, args), env)
+          jcall(cons(:skip1, args), env)
 
           env.push
           env.get(:readtable).push
@@ -79,14 +74,14 @@ $env.put(:readsexp, ->(env, args) {
           env.get(:readtable).put(")", :"readsexp done")
 
           loop do
-            x = call(cons(:read, args), env)
+            x = jcall(cons(:read, args), env)
             break if mdone
             items.push(x)
           end
 
           env.get(:readtable).pop
           env.pop
-          call(cons(:skip1, args), env)
+          jcall(cons(:skip1, args), env)
 
           items.to_list
 })
@@ -106,23 +101,23 @@ $env.put(:readnumber, ->(env, args) {
 
 $env.put(:readquote, ->(env, args) {
           src = (args && args[0]) || STDIN
-          call(cons(:skip1, args), env)
-          cons :quote, call(cons(:read, args), env)
+          jcall(cons(:skip1, args), env)
+          cons :quote, jcall(cons(:read, args), env)
 })
 
 $env.put(:readstring, ->(env, args) {
           src = args[0] || STDIN
 
-          call(cons(:skip1, args), env)
+          jcall(cons(:skip1, args), env)
           str = read_while(src, ->(str) { !str.end_with?('"') || (str.end_with?('\\"') && !str.end_with?('\\\\"'))  })
-          call(cons(:skip1, args), env)
+          jcall(cons(:skip1, args), env)
           str[...-1]
 })
 
 $env.put(:readcomment, ->(env, args) {
           src = (args && args[0]) || STDIN
           read_while(src, ->(str) { !str.match? /\n/ })
-          call(cons(:read, args), env)
+          jcall(cons(:read, args), env)
 })
 
 $env.get(:readtable).put(";", :readcomment)
