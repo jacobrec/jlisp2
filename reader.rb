@@ -3,7 +3,7 @@ require_relative "./list"
 def jcall(sexp, env)
   sexp = sexp.to_list if sexp.class == Array
   cmd = sexp.car
-  fn = env.get(cmd) 
+  fn = env.get(cmd)
   raise "Unbound function #{cmd}" if fn.nil?
   fn.call(env, sexp.cdr)
 end

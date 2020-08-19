@@ -32,7 +32,7 @@ class List
   end
 
   def to_array()
-    return [] if self.car == nil
+    return [] if self.car == nil && self.cdr == nil
     return [self.car] if self.cdr == nil
     [self.car].concat(self.cdr.to_array)
   end

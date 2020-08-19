@@ -71,4 +71,13 @@
 (assert= 2 (or nil 2 3 4 5))
 (assert= false (or nil false))
 
+(assert= '(4 5 6) (map (fn (x) (+ 3 x)) '(1 2 3)))
+(assert= '(3 3 3) (filter (fn (x) (= 3 x)) '(1 2 3 1 2 3 1 2 3)))
+(assert= 18       (reduce + '(1 2 3 1 2 3 1 2 3) 0))
+(assert= "abcde"  (reduce-right string+ '("a" "b" "c" "d" "e") ""))
+(assert= "edcba"  (reduce-left string+ '("a" "b" "c" "d" "e") ""))
+(assert= "edcba"  (reduce string+ '("a" "b" "c" "d" "e") ""))
+
+(assert= '(1 2 3 4) (reverse '(4 3 2 1)))
+
 (write "All tests finished\n")

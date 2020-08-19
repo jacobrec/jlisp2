@@ -33,8 +33,6 @@ class Function
       end
       @args.push(x)
       arglist = arglist.cdr
-
-      break if x.nil?
     end
   end
 
@@ -245,6 +243,7 @@ $env.put(:"hashmap-size", ->(env, args) {
 })
 
 $env.put(:+, ->(env, args) {args.to_array.sum})
+$env.put(:"string+", ->(env, args) {args.to_array.join})
 $env.put(:"=", ->(env, args) {args[0] == args[1]})
 $env.put(:stdout, STDOUT)
 $env.put(:stderr, STDERR)
