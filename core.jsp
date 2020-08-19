@@ -69,3 +69,11 @@
         (write ">>> \n" stderr)
         (write "\n" stderr)
         (throw "Assert failed"))))
+
+(defun repl ()
+  (write "> ")
+  (def v (read))
+  (unless (eof? v)
+    (write (eval v))
+    (write "\n")
+    (repl)))

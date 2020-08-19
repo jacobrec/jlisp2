@@ -242,4 +242,21 @@ def ruby_load(file)
 end
 
 ruby_load("core.jsp")
-ruby_load("tests.jsp")
+if ARGV.include? "--test"
+  ruby_load("tests.jsp")
+elsif ARGV.include? "--help"
+  puts "ruby #{$0} --test to run tests"
+  puts "ruby #{$0} FILENAME1 FILENAME2 to run files"
+  puts "ruby #{$0} to run a repl"
+elsif ARGV.length == 0
+  jcall([:repl], $env)
+else # treat each argument as a filename
+  ARGV.map { |x|
+    if !File.file? x
+      puts "#{x} is not a valid file"
+      exit 1
+    end
+  }
+
+  ARGV.map { |x| ruby_load(x) }
+end
