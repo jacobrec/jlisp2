@@ -38,7 +38,9 @@
   (unless (eof? v)
     (write (eval v))
     (write "\n")
-    (repl)))
+    (repl))
+  (write "(exit 0)\n")
+  (exit 0))
 
 
 (def $toplevel (current-enviroment))

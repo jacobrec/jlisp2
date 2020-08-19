@@ -20,20 +20,29 @@ class Function
   @args = nil
   @restargs = nil
   @body = nil
-  def initialize(arglist, body)
+  def initialize(arglist, body, env)
     @arity = length(arglist)
     @body = body
     @args = []
+    defaults = {}
+    puts arglist
     loop do
       break if arglist.nil?
       x = arglist.car
-      if x == :"."
+      if x.class == List # default argument
+        defaults[x[0]] = x[1]
+        @args.push(x[0])
+      elsif x == :"."
         @restargs = arglist.cdr.car
         break
+      else # regular argument
+        @args.push(x)
       end
-      @args.push(x)
       arglist = arglist.cdr
     end
+
+    @default_after = @args.length - defaults.size
+    @defaults = @args[@default_after..].map { |x| jcall([:eval, defaults[x]], env) }
   end
 
   def body
@@ -51,18 +60,32 @@ class Function
   end
 
   def call(env, args)
+    oargs = args
     bl = length @body
-    if args.nil?
+    if args.nil? && @args.length == 0
       env.push
-    elsif @restargs
-      env.push @args.zip(args.to_array)
-      restargs = args
-      for x in 0...@args.length
-        restargs = restargs.cdr
-      end
-      env.put(@restargs, restargs)
     else
-      env.push @args.zip(args.to_array)
+      args = args.to_array if !args.nil?
+      args = [] if args.nil?
+      argcount = args.length
+      diff = @args.length - argcount
+      if diff < 0 && !@restargs
+        raise "Too many arguments to function. Expected #{@args.length} and got #{argcount}"
+      elsif diff < 0 && @restargs # rest arguments and no defaults needed
+        env.push @args.zip(args)
+      elsif diff > @defaults.size
+        raise "Not enough arguments to function. Expected #{@args.length} and got #{argcount}"
+      else
+        env.push @args.zip(args.concat(@defaults.last(diff)))
+      end
+
+      if @restargs
+        restargs = oargs
+        for x in 0...@args.length
+          restargs = restargs.cdr
+        end
+        env.put(@restargs, restargs)
+      end
     end
 
     v = nil
@@ -146,10 +169,10 @@ $env.put(:eval, ->(env, args) {
                v
 
              when :fn
-               Function.new(fn.cdr.car, fn.cdr.cdr)
+               Function.new(fn.cdr.car, fn.cdr.cdr, env)
 
              when :macro
-               Macro.new(Function.new(fn.cdr.car, fn.cdr.cdr))
+               Macro.new(Function.new(fn.cdr.car, fn.cdr.cdr, env))
 
              when :quasiquote
                quasiquote_transform fn.cdr.car, env
@@ -259,6 +282,7 @@ def ruby_load(file)
   end
 end
 
+$env.put(:"$repl", false)
 ruby_load("core.jsp")
 if ARGV.include? "--test"
   ruby_load("tests.jsp")
@@ -267,6 +291,7 @@ elsif ARGV.include? "--help"
   puts "ruby #{$0} FILENAME1 FILENAME2 to run files"
   puts "ruby #{$0} to run a repl"
 elsif ARGV.length == 0
+  $env.put(:"$repl", true)
   jcall([:repl], $env)
 else # treat each argument as a filename
   ARGV.map { |x|

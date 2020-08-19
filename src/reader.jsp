@@ -2,7 +2,7 @@
 
 ;; read
 
-(defun peekchar (src)
+(defun peekchar ((src stdin))
   (let ((x (readchar src)))
      (unreadchar x src)
      x))
@@ -11,7 +11,7 @@
 ;; unreadchar
 ;; readsymbol
 
-(defun skip1read (src)
+(defun skip1read ((src stdin))
   (readchar src)
   (read src))
 
