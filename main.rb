@@ -225,6 +225,25 @@ $env.put(:"current-enviroment", ->(env, args) {
            env.clone
 })
 
+$env.put(:"empty-hashmap", ->(env, args) {
+           Hash.new
+})
+$env.put(:"hashmap-add", ->(env, args) {
+           args[0][args[1]] = args[2]
+})
+$env.put(:"hashmap-remove", ->(env, args) {
+           args[0].delete(args[1])
+})
+$env.put(:"hashmap-get", ->(env, args) {
+           args[0][args[1]]
+})
+$env.put(:"hashmap-has", ->(env, args) {
+           args[0].has_key? args[1]
+})
+$env.put(:"hashmap-size", ->(env, args) {
+           args[0].size
+})
+
 $env.put(:+, ->(env, args) {args.to_array.sum})
 $env.put(:"=", ->(env, args) {args[0] == args[1]})
 $env.put(:stdout, STDOUT)

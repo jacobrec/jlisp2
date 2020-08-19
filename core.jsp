@@ -1,3 +1,4 @@
+;;; Step 1, define enough stuff to be able to define require
 (def defmacro
     (macro (name args . bodies)
       `(def ,name (macro ,args ,@bodies))))
@@ -5,31 +6,19 @@
 (defmacro defun (name args . bodies)
   `(def ,name (fn ,args ,@bodies)))
 
-(defun map (f list)
-  (if (nil? list)
-    nil
-    (cons (f (car list))
-          (map f (cdr list)))))
-
-(defun or_2 (a b)
-  (if a a b))
-(defun and_2 (a b)
-  (if a b a))
-
-(defun not (val)
-  (if (or_2 (nil? val)
-            (and_2 (bool? val) (= false val)))
-    true
-    false))
-
 (defmacro do (. bodies)
   `(let () ,@bodies))
 
 (defmacro unless (con . bodies)
   `(if ,con nil (do ,@bodies)))
-(defmacro when (con . bodies)
-  `(if ,con (do ,@bodies) nil))
+(defmacro when (con . bodies)           ; when technically isnt used
+  `(if ,con (do ,@bodies) nil))         ; to define require, unless
+                                        ; is, and it made sense to put
+                                        ; these next to each other
 
+;; load is kind of like a c style include, where it throws the forms
+;; in the current location. load-in-env allows you to specify a
+;; location to run it from, eg. $toplevel
 (defun load-in-env (filepath env)
   (def f (open filepath))
   (defun loop ()
@@ -43,33 +32,6 @@
   `(load-in-env ,filepath (current-enviroment)))
 
 
-;;; Anaphoric Macros
-(defmacro aif (condition then else)
-  `(let ((it ,condition))
-     (if it ,then ,else)))
-
-;;;; Testing
-(defmacro assert (expr)
-  `(let ((it ,expr))
-     (if it it
-         (do
-           (write "<<<" stderr)
-           (write ',expr stderr)
-           (write ">>> Did not evaluate to true" stderr)
-           (write "\n" stderr)
-           (throw "Assert failed")))))
-
-(defmacro assert= (expr1 expr2)
-  `(if (= ,expr1 ,expr2) true
-       (do
-        (write "<<<" stderr)
-        (write ',expr1 stderr)
-        (write ">>> was not equal to <<<" stderr)
-        (write ',expr2 stderr)
-        (write ">>> \n" stderr)
-        (write "\n" stderr)
-        (throw "Assert failed"))))
-
 (defun repl ()
   (write "> ")
   (def v (read))
@@ -77,3 +39,20 @@
     (write (eval v))
     (write "\n")
     (repl)))
+
+
+(def $toplevel (current-enviroment))
+(def $required (empty-hashmap))
+(defun require (filepath)
+  (unless (hashmap-has $required filepath)
+    (hashmap-add $required filepath true)
+    (load-in-env filepath $toplevel)))
+
+
+(require "src/lists.jsp")
+(require "src/testing.jsp")
+(require "src/booleans.jsp")
+(require "src/anaphoric.jsp")
+(require "src/functional.jsp")
+
+

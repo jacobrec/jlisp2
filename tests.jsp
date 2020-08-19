@@ -30,4 +30,45 @@
 
 (assert= '(1 2 3) `(1 2 3))
 
+;;; Hashmap tests
+(def h (empty-hashmap))
+(assert= h (empty-hashmap))
+(assert= 0 (hashmap-size h))
+
+(hashmap-add h 'hi 4)
+(assert= 1 (hashmap-size h))
+(assert (hashmap-has h 'hi))
+
+(hashmap-add h 'hello 5)
+(assert= 4 (hashmap-get h 'hi))
+(assert (hashmap-has h 'hi))
+(assert= 5 (hashmap-get h 'hello))
+(assert= 2 (hashmap-size h))
+
+(hashmap-add h 'hi 5)
+(assert= 5 (hashmap-get h 'hi))
+(assert= 2 (hashmap-size h))
+(assert (hashmap-has h 'hi))
+
+(hashmap-remove h 'hi)
+(assert= 1 (hashmap-size h))
+(assert= nil (hashmap-get h 'hi))
+(assert (not (hashmap-has h 'hi)))
+(assert= nil (hashmap-get h 'aahhhahah))
+
+(assert= 3 (length '(1 2 3)))
+(assert= 0 (length nil))
+(assert= 0 (length '()))
+(assert= nil '())
+
+(assert (and))
+(assert= 2 (and 1 2))
+(assert= 5 (and 1 2 3 4 5))
+(assert= false (and 1 false 3 4 5))
+
+(assert (not (or)))
+(assert= 1 (or 1 2))
+(assert= 2 (or nil 2 3 4 5))
+(assert= false (or nil false))
+
 (write "All tests finished\n")
