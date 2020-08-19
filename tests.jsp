@@ -80,4 +80,8 @@
 
 (assert= '(1 2 3 4) (reverse '(4 3 2 1)))
 
+(defun test ((a 1) (b 2) . c)
+  `(,(+ a b) ,@c))
+
+
 (write "All tests finished\n")

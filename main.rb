@@ -25,7 +25,6 @@ class Function
     @body = body
     @args = []
     defaults = {}
-    puts arglist
     loop do
       break if arglist.nil?
       x = arglist.car
