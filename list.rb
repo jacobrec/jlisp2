@@ -66,6 +66,10 @@ class List
       nil
     end
   end
+
+   def ==(other)
+     other.class == List && other.car == self.car && other.cdr == self.cdr
+  end
 end
 
 class Array

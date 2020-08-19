@@ -10,3 +10,11 @@
     nil
     (cons (f (car list))
           (map f (cdr list)))))
+
+(defmacro assert (expr)
+  `(if ,expr
+     nil
+     (throw "Assert failed")))
+
+(assert true)
+(assert false)

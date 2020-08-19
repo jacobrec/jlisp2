@@ -101,7 +101,6 @@ def quasiquote_transform(args, env)
   handle_list.call(map(fn, args))
 end
 
-$env.put(:+, ->(env, args) {args.to_array.sum})
 
 $env.put(:eval, ->(env, args) {
            fn = args.car
@@ -201,9 +200,16 @@ $env.put(:cons, ->(env, args) {
            cons args[0], args[1]
 })
 
+$env.put(:throw, ->(env, args) {
+           raise args[0]
+})
 
-f = File.open("tmp.jsp")
-for x in 0...4
+$env.put(:+, ->(env, args) {args.to_array.sum})
+$env.put(:"=", ->(env, args) {args[0] == args[1]})
+
+
+f = File.open("core.jsp")
+for x in 0...6
   sexp = jcall([:read, f], $env)
   puts "Read: #{sexp}"
   x = jcall([:eval, sexp], $env)
