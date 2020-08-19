@@ -27,5 +27,33 @@
     true
     false))
 
+(defmacro do (. bodies)
+  `(let () ,@bodies))
+
+(defmacro unless (con . bodies)
+  `(if ,con nil (do ,@bodies)))
+(defmacro when (con . bodies)
+  `(if ,con (do ,@bodies) nil))
+
+(defun load-in-env (filepath env)
+  (def f (open filepath))
+  (defun loop ()
+    (def v (read f))
+    (unless (eof? v)
+            (eval v env)
+            (loop)))
+  (loop))
+
+(defmacro load (filepath)
+  `(load-in-env ,filepath (current-enviroment)))
+
+(load "small.jsp")
+(assert (= 49 (identity 49)))
+
 (assert true)
 (assert (not false))
+
+(assert (= 3 (when 1 1 2 3)))
+(assert (= nil (unless 1 1 2 3)))
+
+(write "Loaded core.jsp\n")

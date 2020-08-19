@@ -103,6 +103,7 @@ end
 
 
 $env.put(:eval, ->(env, args) {
+           env = args[1] if !args[1].nil?
            fn = args.car
            if fn.class == List
              cmd = fn.car
@@ -134,9 +135,12 @@ $env.put(:eval, ->(env, args) {
              when :let
                args = fn[1]
                body = fn.cdr.cdr
-               mapped_args = map(->(x) {[x[0], jcall([:eval,x[1]], env)]}, args).to_array.to_h
-
-               env.push(mapped_args)
+               if args.nil?
+                 env.push
+               else
+                 mapped_args = map(->(x) {[x[0], jcall([:eval,x[1]], env)]}, args).to_array.to_h
+                 env.push(mapped_args)
+               end
                v = nil
                map(->(x){ v = jcall([:eval, x], env)}, body)
                env.pop
@@ -186,6 +190,9 @@ $env.put(:write, ->(env, args) {
 $env.put(:bool?, ->(env, args) {
            args[0].class == TrueClass || args[0].class == FalseClass
 })
+$env.put(:eof?, ->(env, args) {
+           args[0] == :EOF
+})
 $env.put(:nil?, ->(env, args) {
            args[0].nil?
 })
@@ -207,14 +214,25 @@ $env.put(:throw, ->(env, args) {
            raise args[0]
 })
 
+$env.put(:dbg, ->(env, args) {
+           p args[0]
+})
+
+$env.put(:exit, ->(env, args) {
+           exit args[0]
+})
+
+$env.put(:"current-enviroment", ->(env, args) {
+           env.clone
+})
+
 $env.put(:+, ->(env, args) {args.to_array.sum})
 $env.put(:"=", ->(env, args) {args[0] == args[1]})
 
 
 f = File.open("core.jsp")
-for x in 0...9
+loop do
   sexp = jcall([:read, f], $env)
-  puts "Read: #{sexp}"
+  break if sexp == :EOF
   x = jcall([:eval, sexp], $env)
-  puts "   Eval: #{x}"
 end

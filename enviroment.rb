@@ -48,6 +48,16 @@ class Enviroment
     @ctx.put(key, val)
   end
 
+  def clone
+    e = Enviroment.new
+    e.ctx = @ctx
+    e
+  end
+
+  def ctx=(val)
+    @ctx = val
+  end
+
   private
   def add_all(items)
     for x in items do
