@@ -18,11 +18,24 @@ end
 class Function
   @arity = nil
   @args = nil
+  @restargs = nil
   @body = nil
   def initialize(arglist, body)
     @arity = length(arglist)
-    @args = arglist
     @body = body
+    @args = []
+    loop do
+      break if arglist.nil?
+      x = arglist.car
+      if x == :"."
+        @restargs = arglist.cdr.car
+        break
+      end
+      @args.push(x)
+      arglist = arglist.cdr
+
+      break if x.nil?
+    end
   end
 
   def body
@@ -36,16 +49,22 @@ class Function
   end
 
   def to_s
-    "(fn #{args} #{body})"
+    "(fn #{args} #{body.to_s_no_outer})"
   end
 
   def call(env, args)
     bl = length @body
-
     if args.nil?
       env.push
+    elsif @restargs
+      env.push @args.zip(args.to_array)
+      restargs = args
+      for x in 0...@args.length
+        restargs = restargs.cdr
+      end
+      env.put(@restargs, restargs)
     else
-      env.push @args.to_array.zip(args.to_array)
+      env.push @args.zip(args.to_array)
     end
 
     v = nil
@@ -74,7 +93,7 @@ def quasiquote_transform(args, env)
     elsif x.class == List && x.car == :"unquote-splice"
       jcall(cons(:eval, x.cdr), env)
     elsif x.class == List
-      cons handle_list(map(fn, x)), nil
+      cons handle_list.call(map(fn, x)), nil
     else
       cons x, nil
     end
@@ -184,7 +203,7 @@ $env.put(:cons, ->(env, args) {
 
 
 f = File.open("tmp.jsp")
-for x in 0...2
+for x in 0...4
   sexp = jcall([:read, f], $env)
   puts "Read: #{sexp}"
   x = jcall([:eval, sexp], $env)
