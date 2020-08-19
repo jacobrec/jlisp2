@@ -6,6 +6,15 @@ $env.put(:readtable, Enviroment.new)
 
 require_relative "./reader"
 
+class Macro
+  def initialize(fn)
+    @fn = fn
+  end
+  def call(env, args)
+    @fn.call(env, args)
+  end
+end
+
 class Function
   @arity = nil
   @args = nil
@@ -43,7 +52,19 @@ class Function
     env.pop
     v
   end
-  
+end
+
+def quasiquote_transform(args, env)
+  fn = ->(x){
+    if x.class == List && x.car == :unquote
+      call(cons(:eval, x.cdr), env)
+    elsif x.class == List
+      map(fn, x)
+    else
+      x
+    end
+  }
+  map(fn, args)
 end
 
 $env.put(:+, ->(env, args) {args.to_array.sum})
@@ -55,11 +76,11 @@ $env.put(:eval, ->(env, args) {
 
              case cmd
              when :if
-               v = call([:eval, fn[1]], $env)
+               v = call([:eval, fn[1]], env)
                if v
-                 call([:eval, fn[2]], $env)
+                 call([:eval, fn[2]], env)
                else
-                 call([:eval, fn[3]], $env)
+                 call([:eval, fn[3]], env)
                end
 
              when :quote
@@ -67,26 +88,37 @@ $env.put(:eval, ->(env, args) {
 
              when :def  #TODO: push scope
                sym = fn[1]
-               val = call([:eval, fn[2]], $env)
-               $env.put(sym, val)
+               val = call([:eval, fn[2]], env)
+               env.put(sym, val)
                val
 
              when :set
                sym = fn[1]
                val = fn[2]
-               $env.put(sym, val)
+               env.put(sym, val)
                val
 
              when :fn
                Function.new(fn.cdr.car, fn.cdr.cdr)
 
+             when :macro
+               Macro.new(Function.new(fn.cdr.car, fn.cdr.cdr))
+
+             when :quasiquote
+               quasiquote_transform fn.cdr.car, env
+
              else
-               fn = List.new(cons(:quote, fn.car), fn.cdr)
-               mapped_fn = map(->(x){call([:eval, x], $env)}, fn)
-               call(mapped_fn, $env)
+               if env.get(fn.car).class == Macro
+                 env.get(fn.car).call(env, fn.cdr)
+                 call([:eval, env.get(fn.car).call(env, fn.cdr)], env)
+               else
+                 fn = List.new(cons(:quote, fn.car), fn.cdr)
+                 mapped_fn = map(->(x){call([:eval, x], env)}, fn)
+                 call(mapped_fn, env)
+               end
              end
            elsif fn.class == Symbol
-             $env.get(fn)
+             env.get(fn)
            else
              fn # return value if just value. Eg. string, int
            end
@@ -123,11 +155,8 @@ $env.put(:cons, ->(env, args) {
 })
 
 
-
-
-  
 f = File.open("tmp.jsp")
-for x in 0...2
+for x in 0...4
   x = call([:eval, call([:read, f], $env)], $env)
   puts x
 end

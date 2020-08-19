@@ -108,7 +108,6 @@ $env.put(:readquote, ->(env, args) {
           src = (args && args[0]) || STDIN
           call(cons(:skip1, args), env)
           cons :quote, call(cons(:read, args), env)
-          
 })
 
 $env.put(:readstring, ->(env, args) {
@@ -120,6 +119,13 @@ $env.put(:readstring, ->(env, args) {
           str[...-1]
 })
 
+$env.put(:readcomment, ->(env, args) {
+          src = (args && args[0]) || STDIN
+          read_while(src, ->(str) { !str.match? /\n/ })
+          call(cons(:read, args), env)
+})
+
+$env.get(:readtable).put(";", :readcomment)
 $env.get(:readtable).put("\"", :readstring)
 $env.get(:readtable).put("'", :readquote)
 $env.get(:readtable).put(" ", :skip1read)

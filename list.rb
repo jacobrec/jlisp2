@@ -8,7 +8,6 @@ def map(fn, list)
   else
     cons fn.call(list.car), map(fn, list.cdr)
   end
-  
 end
 
 def length(list)
@@ -17,7 +16,6 @@ def length(list)
   else
     length(list.cdr) + 1
   end
-  
 end
 
 class List
