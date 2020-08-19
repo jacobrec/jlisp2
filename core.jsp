@@ -47,13 +47,8 @@
 (defmacro load (filepath)
   `(load-in-env ,filepath (current-enviroment)))
 
-(load "small.jsp")
-(assert (= 49 (identity 49)))
 
-(assert true)
-(assert (not false))
-
-(assert (= 3 (when 1 1 2 3)))
-(assert (= nil (unless 1 1 2 3)))
-
-(write "Loaded core.jsp\n")
+;;; Anaphoric Macros
+(defmacro aif (condition then else)
+  `(let ((it ,condition))
+     (if it ,then ,else))) ; Hello

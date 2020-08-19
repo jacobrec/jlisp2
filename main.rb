@@ -230,9 +230,14 @@ $env.put(:+, ->(env, args) {args.to_array.sum})
 $env.put(:"=", ->(env, args) {args[0] == args[1]})
 
 
-f = File.open("core.jsp")
-loop do
-  sexp = jcall([:read, f], $env)
-  break if sexp == :EOF
-  x = jcall([:eval, sexp], $env)
+def ruby_load(file)
+  f = File.open(file)
+  loop do
+    sexp = jcall([:read, f], $env)
+    break if sexp == :EOF
+    x = jcall([:eval, sexp], $env)
+  end
 end
+
+ruby_load("core.jsp")
+ruby_load("tests.jsp")
