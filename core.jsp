@@ -13,8 +13,19 @@
 
 (defmacro assert (expr)
   `(if ,expr
-     nil
+     ,expr
      (throw "Assert failed")))
 
+(defun or_2 (a b)
+  (if a a b))
+(defun and_2 (a b)
+  (if a b a))
+
+(defun not (val)
+  (if (or_2 (nil? val)
+            (and_2 (bool? val) (= false val)))
+    true
+    false))
+
 (assert true)
-(assert false)
+(assert (not false))

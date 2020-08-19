@@ -183,6 +183,9 @@ $env.put(:write, ->(env, args) {
            args[0]
 })
 
+$env.put(:bool?, ->(env, args) {
+           args[0].class == TrueClass || args[0].class == FalseClass
+})
 $env.put(:nil?, ->(env, args) {
            args[0].nil?
 })
@@ -209,7 +212,7 @@ $env.put(:"=", ->(env, args) {args[0] == args[1]})
 
 
 f = File.open("core.jsp")
-for x in 0...6
+for x in 0...9
   sexp = jcall([:read, f], $env)
   puts "Read: #{sexp}"
   x = jcall([:eval, sexp], $env)
