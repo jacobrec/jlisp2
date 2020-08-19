@@ -99,11 +99,17 @@ $env.put(:readnumber, ->(env, args) {
           end
 })
 
-$env.put(:readquote, ->(env, args) {
-          src = (args && args[0]) || STDIN
-          jcall(cons(:skip1, args), env)
-          cons :quote, jcall(cons(:read, args), env)
-})
+def single_surround_reader(surround)
+  ->(env, args) {
+    src = (args && args[0]) || STDIN
+    jcall(cons(:skip1, args), env)
+    [surround, jcall(cons(:read, args), env)].to_list
+  }
+end
+
+$env.put(:readquote, single_surround_reader(:quote))
+$env.put(:readquasiquote, single_surround_reader(:quasiquote))
+$env.put(:readunquote, single_surround_reader(:unquote))
 
 $env.put(:readstring, ->(env, args) {
           src = args[0] || STDIN
@@ -123,6 +129,8 @@ $env.put(:readcomment, ->(env, args) {
 $env.get(:readtable).put(";", :readcomment)
 $env.get(:readtable).put("\"", :readstring)
 $env.get(:readtable).put("'", :readquote)
+$env.get(:readtable).put("`", :readquasiquote)
+$env.get(:readtable).put(",", :readunquote)
 $env.get(:readtable).put(" ", :skip1read)
 $env.get(:readtable).put("\n", :skip1read)
 $env.get(:readtable).put("(", :readsexp)

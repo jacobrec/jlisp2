@@ -84,7 +84,7 @@ $env.put(:eval, ->(env, args) {
                end
 
              when :quote
-               fn.cdr
+               fn[1]
 
              when :def  #TODO: push scope
                sym = fn[1]
@@ -124,8 +124,9 @@ $env.put(:eval, ->(env, args) {
                  env.get(fn.car).call(env, fn.cdr)
                  jcall([:eval, env.get(fn.car).call(env, fn.cdr)], env)
                else
-                 fn = List.new(cons(:quote, fn.car), fn.cdr)
-                 mapped_fn = map(->(x){jcall([:eval, x], env)}, fn)
+                 car = fn.car
+                 mapped_fn = map(->(x){jcall([:eval, x], env)}, fn.cdr)
+                 mapped_fn = cons(car, mapped_fn)
                  jcall(mapped_fn, env)
                end
              end
@@ -169,6 +170,8 @@ $env.put(:cons, ->(env, args) {
 
 f = File.open("tmp.jsp")
 for x in 0...4
-  x = jcall([:eval, jcall([:read, f], $env)], $env)
+  sexp = jcall([:read, f], $env)
+  puts sexp
+  x = jcall([:eval, sexp], $env)
   puts x
 end
