@@ -21,10 +21,10 @@ end
 
 $env.put(:read, ->(env, args) {
           c = jcall(cons(:peekchar, args), env)
+          return :EOF if c.nil?
           fn = env.get(:readtable).get(c)
           fn = :readsymbol if fn.nil?
           res = jcall(cons(fn, args), env)
-          res
 })
 
 $env.put(:peekchar, ->(env, args) {
@@ -134,12 +134,35 @@ $env.put(:readunquote, ->(env, args) {
 })
 
 $env.put(:readstring, ->(env, args) {
-          src = args[0] || STDIN
-
-          jcall(cons(:skip1, args), env)
-          str = read_while(src, ->(str) { !str.end_with?('"') || (str.end_with?('\\"') && !str.end_with?('\\\\"'))  })
-          jcall(cons(:skip1, args), env)
-          str[...-1]
+          str = ""
+          escaped = false
+          jcall(cons(:skip1, args), env) # leading "
+          loop do
+            c = jcall(cons(:readchar, args), env)
+            break if c == '"' && !escaped
+            if c == "\\"
+              escaped = true
+            else
+              if escaped
+                escapes = {
+                  "n"=>"\n",
+                  "t"=>"\t",
+                  "r"=>"\r",
+                  "f"=>"\f",
+                  "v"=>"\v",
+                  "b"=>"\b",
+                  "\\"=>"\\",
+                }
+                if escapes.include? c
+                  str += escapes[c]
+                end
+              else
+                str += c
+              end
+              escaped = false
+            end
+          end
+          str
 })
 
 $env.put(:readcomment, ->(env, args) {
