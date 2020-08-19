@@ -35,19 +35,15 @@ $env.put(:peekchar, ->(env, args) {
 })
 
 $env.put(:unreadchar, ->(env, args) {
-          src = (args && args[1]) || STDIN
-          src.ungetc args[0]
+          ((args && args[1]) || STDIN).ungetc args[0]
 })
 
 $env.put(:readchar, ->(env, args) {
-          src = (args && args[0]) || STDIN
-          src.getc
+          ((args && args[0]) || STDIN).getc
 })
 
 $env.put(:readsymbol, ->(env, args) {
-          src = (args && args[0]) || STDIN
-
-          str = read_while(src, ->(str) { str.match?(/\A[^\s|"|'|\(|\)]*\z/) && !str.match?(/\A\.+\z/) })
+          str = read_while(((args && args[0]) || STDIN), ->(str) { str.match?(/\A[^\s|"|'|\(|\)]*\z/) && !str.match?(/\A\.+\z/) })
 
           str = str[...-1]
           sym = str.to_sym
@@ -93,11 +89,7 @@ $env.put(:readnumber, ->(env, args) {
           str = read_while(src, ->(str) { str.match?(/\A\d*\z/) || str.match?(/\A\d*\.\d*\z/) })
 
           str = str[...-1]
-          if str.include?(".")
-            str.to_f
-          else
-            str.to_i
-          end
+          str.include?(".") ? str.to_f : str.to_i
 })
 
 $env.put(:readdot, ->(env, args) {
@@ -166,8 +158,7 @@ $env.put(:readstring, ->(env, args) {
 })
 
 $env.put(:readcomment, ->(env, args) {
-          src = (args && args[0]) || STDIN
-          read_while(src, ->(str) { !str.match? /\n/ })
+          read_while((args && args[0]) || STDIN, ->(str) { !str.match? /\n/ })
           jcall(cons(:read, args), env)
 })
 

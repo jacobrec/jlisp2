@@ -3,19 +3,11 @@ def cons(a, b)
 end
 
 def map(fn, list)
-  if list.nil?
-    nil
-  else
-    cons fn.call(list.car), map(fn, list.cdr)
-  end
+  list.nil? ? nil : cons(fn.call(list.car), map(fn, list.cdr))
 end
 
 def length(list)
-  if list.nil?
-    0
-  else
-    length(list.cdr) + 1
-  end
+  list.nil? ? 0 : (length(list.cdr) + 1)
 end
 
 class List
