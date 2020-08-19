@@ -158,7 +158,6 @@ $env.put(:eval, ->(env, args) {
 
              else
                if env.get(fn.car).class == Macro
-                 env.get(fn.car).call(env, fn.cdr)
                  jcall([:eval, env.get(fn.car).call(env, fn.cdr)], env)
                else
                  car = fn.car
@@ -228,6 +227,9 @@ $env.put(:"current-enviroment", ->(env, args) {
 
 $env.put(:+, ->(env, args) {args.to_array.sum})
 $env.put(:"=", ->(env, args) {args[0] == args[1]})
+$env.put(:stdout, STDOUT)
+$env.put(:stderr, STDERR)
+$env.put(:stdin,  STDIN)
 
 
 def ruby_load(file)

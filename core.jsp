@@ -11,11 +11,6 @@
     (cons (f (car list))
           (map f (cdr list)))))
 
-(defmacro assert (expr)
-  `(if ,expr
-     ,expr
-     (throw "Assert failed")))
-
 (defun or_2 (a b)
   (if a a b))
 (defun and_2 (a b)
@@ -51,4 +46,26 @@
 ;;; Anaphoric Macros
 (defmacro aif (condition then else)
   `(let ((it ,condition))
-     (if it ,then ,else))) ; Hello
+     (if it ,then ,else)))
+
+;;;; Testing
+(defmacro assert (expr)
+  `(let ((it ,expr))
+     (if it it
+         (do
+           (write "<<<" stderr)
+           (write ',expr stderr)
+           (write ">>> Did not evaluate to true" stderr)
+           (write "\n" stderr)
+           (throw "Assert failed")))))
+
+(defmacro assert= (expr1 expr2)
+  `(if (= ,expr1 ,expr2) true
+       (do
+        (write "<<<" stderr)
+        (write ',expr1 stderr)
+        (write ">>> was not equal to <<<" stderr)
+        (write ',expr2 stderr)
+        (write ">>> \n" stderr)
+        (write "\n" stderr)
+        (throw "Assert failed"))))
