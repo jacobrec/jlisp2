@@ -34,6 +34,11 @@ $env.put(:peekchar, ->(env, args) {
           c
 })
 
+$env.put(:unreadchar, ->(env, args) {
+          src = (args && args[1]) || STDIN
+          src.ungetc args[0]
+})
+
 $env.put(:readchar, ->(env, args) {
           src = (args && args[0]) || STDIN
           src.getc
@@ -53,20 +58,15 @@ $env.put(:readsymbol, ->(env, args) {
 })
 
 $env.put(:skip1read, ->(env, args) {
-          jcall(cons(:skip1, args), env)
+          jcall(cons(:readchar, args), env)
           jcall(cons(:read, args), env)
-})
-
-$env.put(:skip1, ->(env, args) {
-          src = (args && args[0]) || STDIN
-          src.getc
 })
 
 $env.put(:readsexp, ->(env, args) {
           mdone = false
           items = []
 
-          jcall(cons(:skip1, args), env)
+          jcall(cons(:readchar, args), env)
 
           env.push
           env.get(:readtable).push
@@ -82,7 +82,7 @@ $env.put(:readsexp, ->(env, args) {
 
           env.get(:readtable).pop
           env.pop
-          jcall(cons(:skip1, args), env)
+          jcall(cons(:readchar, args), env)
 
           items.to_list
 })
@@ -115,7 +115,7 @@ $env.put(:readdot, ->(env, args) {
 def single_surround_reader(surround)
   ->(env, args) {
     src = (args && args[0]) || STDIN
-    jcall(cons(:skip1, args), env)
+    jcall(cons(:readchar, args), env)
     [surround, jcall(cons(:read, args), env)].to_list
   }
 end
@@ -136,7 +136,7 @@ $env.put(:readunquote, ->(env, args) {
 $env.put(:readstring, ->(env, args) {
           str = ""
           escaped = false
-          jcall(cons(:skip1, args), env) # leading "
+          jcall(cons(:readchar, args), env) # leading "
           loop do
             c = jcall(cons(:readchar, args), env)
             break if c == '"' && !escaped

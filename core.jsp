@@ -54,5 +54,6 @@
 (require "src/booleans.jsp")
 (require "src/anaphoric.jsp")
 (require "src/functional.jsp")
+(require "src/reader.jsp")
 
 
