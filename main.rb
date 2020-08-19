@@ -42,7 +42,11 @@ class Function
   def call(env, args)
     bl = length @body
 
-    env.push @args.to_array.zip(args.to_array)
+    if args.nil?
+      env.push
+    else
+      env.push @args.to_array.zip(args.to_array)
+    end
 
     v = nil
     for x in 0...bl
@@ -55,16 +59,27 @@ class Function
 end
 
 def quasiquote_transform(args, env)
+  handle_list = ->(list) {
+    x = list.car
+    last = x
+    map ->(y){
+      last.cdr = y
+      last = last.cdr
+    }, list.cdr
+    x
+  }
   fn = ->(x){
     if x.class == List && x.car == :unquote
+      cons(jcall(cons(:eval, x.cdr), env), nil)
+    elsif x.class == List && x.car == :"unquote-splice"
       jcall(cons(:eval, x.cdr), env)
     elsif x.class == List
-      map(fn, x)
+      cons handle_list(map(fn, x)), nil
     else
-      x
+      cons x, nil
     end
   }
-  map(fn, args)
+  handle_list.call(map(fn, args))
 end
 
 $env.put(:+, ->(env, args) {args.to_array.sum})
@@ -101,7 +116,7 @@ $env.put(:eval, ->(env, args) {
              when :let
                args = fn[1]
                body = fn.cdr.cdr
-               mapped_args = map(->(x) {[x[0],x[1]]}, args).to_array.to_h
+               mapped_args = map(->(x) {[x[0], jcall([:eval,x[1]], env)]}, args).to_array.to_h
 
                env.push(mapped_args)
                v = nil
@@ -169,9 +184,9 @@ $env.put(:cons, ->(env, args) {
 
 
 f = File.open("tmp.jsp")
-for x in 0...4
+for x in 0...2
   sexp = jcall([:read, f], $env)
-  puts sexp
+  puts "Read: #{sexp}"
   x = jcall([:eval, sexp], $env)
-  puts x
+  puts "   Eval: #{x}"
 end

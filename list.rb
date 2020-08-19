@@ -21,6 +21,7 @@ end
 class List
   @car = nil
   @cdr = nil
+  attr_accessor :car, :cdr
 
   def self.from_array(a)
     if a.length == 0
@@ -64,14 +65,6 @@ class List
     else
       nil
     end
-  end
-
-  def car
-    @car
-  end
-
-  def cdr
-    @cdr
   end
 end
 

@@ -3,7 +3,9 @@ require_relative "./list"
 def jcall(sexp, env)
   sexp = sexp.to_list if sexp.class == Array
   cmd = sexp.car
-  env.get(cmd).call(env, sexp.cdr)
+  fn = env.get(cmd) 
+  raise "Unbound function #{cmd}" if fn.nil?
+  fn.call(env, sexp.cdr)
 end
 
 def read_while(src, cond)
@@ -18,11 +20,10 @@ def read_while(src, cond)
 end
 
 $env.put(:read, ->(env, args) {
-          src = (args && args[0]) || STDIN
-          c = jcall([:peekchar, src], env)
+          c = jcall(cons(:peekchar, args), env)
           fn = env.get(:readtable).get(c)
           fn = :readsymbol if fn.nil?
-          res = jcall([fn, src], env)
+          res = jcall(cons(fn, args), env)
           res
 })
 
@@ -99,6 +100,18 @@ $env.put(:readnumber, ->(env, args) {
           end
 })
 
+$env.put(:readdot, ->(env, args) {
+           jcall(cons(:readchar, args), env) # skip .
+           c = jcall(cons(:peekchar, args), env) # check if " "
+           if c.match? /\s/
+             :"."
+           else
+             src = (args && args[0]) || STDIN
+             src.ungetc "."
+             $env.get(:readnumber).call(env, args)
+           end
+})
+
 def single_surround_reader(surround)
   ->(env, args) {
     src = (args && args[0]) || STDIN
@@ -109,7 +122,16 @@ end
 
 $env.put(:readquote, single_surround_reader(:quote))
 $env.put(:readquasiquote, single_surround_reader(:quasiquote))
-$env.put(:readunquote, single_surround_reader(:unquote))
+$env.put(:readunquote, ->(env, args) {
+           jcall(cons(:readchar, args), env) # skip ,
+           c = jcall(cons(:peekchar, args), env) # check if @
+           if c == '@'
+             jcall(cons(:readchar, args), env) # skip @
+             [:"unquote-splice", jcall(cons(:read, args), env)].to_list
+           else
+             [:unquote, jcall(cons(:read, args), env)].to_list
+           end
+})
 
 $env.put(:readstring, ->(env, args) {
           src = args[0] || STDIN
@@ -134,7 +156,7 @@ $env.get(:readtable).put(",", :readunquote)
 $env.get(:readtable).put(" ", :skip1read)
 $env.get(:readtable).put("\n", :skip1read)
 $env.get(:readtable).put("(", :readsexp)
-$env.get(:readtable).put(".", :readnumber) # .2
+$env.get(:readtable).put(".", :readdot) # .2
 for x in 0..9
   $env.get(:readtable).put(x.to_s, :readnumber)
 end
