@@ -98,6 +98,18 @@ $env.put(:eval, ->(env, args) {
                env.put(sym, val)
                val
 
+             when :let
+               args = fn[1]
+               body = fn.cdr.cdr
+               mapped_args = map(->(x) {[x[0],x[1]]}, args).to_array.to_h
+
+               env.push(mapped_args)
+               v = nil
+               map(->(x){ v = jcall([:eval, x], env)}, body)
+               env.pop
+
+               v
+
              when :fn
                Function.new(fn.cdr.car, fn.cdr.cdr)
 
@@ -113,7 +125,7 @@ $env.put(:eval, ->(env, args) {
                  jcall([:eval, env.get(fn.car).call(env, fn.cdr)], env)
                else
                  fn = List.new(cons(:quote, fn.car), fn.cdr)
-                 mapped_fn = map(->(x){call([:eval, x], env)}, fn)
+                 mapped_fn = map(->(x){jcall([:eval, x], env)}, fn)
                  jcall(mapped_fn, env)
                end
              end
