@@ -33,3 +33,14 @@
         `(if ,(car opt)
              ,(car (cdr opt))
              (cond ,@(cdr args))))))
+
+(defmacro case (var . args)
+  (def r (reverse args))
+  (def else (car r))
+  (def items (cdr r))
+  (def mapped-items (map (fn (x) `((= ,var ,(car x)) ,(car (cdr x)))) items))
+  (def all-items (cons `(true ,else) mapped-items))
+  (def reversed-all (reverse all-items))
+  (cons 'cond reversed-all))
+
+

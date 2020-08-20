@@ -140,5 +140,9 @@
          3)
 
 
+(assert= 1 (case "a" ("a" 1) ("b" 2) 3))
+(assert= 2 (case "b" ("a" 1) ("b" 2) 3))
+(assert= 3 (case "z" ("a" 1) ("b" 2) 3))
+
 
 (write "All tests finished\n")
