@@ -40,14 +40,15 @@
            (set str
                 (string+ str
                          (if escaped
-                             (if (= c "n") "\n"
-                                 (if (= c "t") "\t"
-                                     (if (= c "r") "\r"
-                                         (if (= c "v") "\v"
-                                             (if (= c "b") "\b"
-                                                 (if (= c "\\") "\\"
-                                                     (if (= c "\"") "\""
-                                                         c)))))))
+                             (case c
+                               ("n" "\n")
+                               ("t" "\t")
+                               ("r" "\r")
+                               ("v" "\v")
+                               ("b" "\b")
+                               ("\\" "\\")
+                               ("\"" "\"")
+                               c)
                              c)))
            (set escaped false)))
       (loop)))

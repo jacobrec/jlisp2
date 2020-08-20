@@ -42,5 +42,3 @@
   (def all-items (cons `(true ,else) mapped-items))
   (def reversed-all (reverse all-items))
   (cons 'cond reversed-all))
-
-
