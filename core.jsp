@@ -51,11 +51,13 @@
     (load-in-env filepath $toplevel)))
 
 
+(require "src/cadr.jsp")
 (require "src/testing.jsp")
 (require "src/functional.jsp")
 (require "src/lists.jsp")
 (require "src/booleans.jsp")
 (require "src/anaphoric.jsp")
+(require "src/printing.jsp")
 (require "src/reader.jsp")
 
 
