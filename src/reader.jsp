@@ -19,11 +19,14 @@
 ;; readnumber
 ;; readdot
 
-;; readquote
-;; readquasiquote
+(defun readquote ((src stdin))
+  (readchar src) ; discards the '
+  `(quote ,(read src)))
+(defun readquasiquote ((src stdin))
+  (readchar src) ; discards the `
+  `(quasiquote ,(read src)))
 ;; readunquote
 
-;; readstring
 (defun readstring ((src stdin))
   (def str "")
   (def escaped false)
@@ -51,4 +54,9 @@
   (loop)
   str)
 
-;; readcomment
+(defun readcomment ((src stdin))
+  (defun loop ()
+    (if (= "\n" (readchar src))
+        (read src)
+        (loop)))
+  (loop))
