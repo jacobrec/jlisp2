@@ -109,6 +109,7 @@ $env.put(:eval, ->(env, args) {
 
 
 def ruby_load(file)
+  $env.put(:"$file", [file].to_list)
   f = File.open(file)
   loop do
     sexp = jcall([:read, f], $env)
@@ -118,14 +119,15 @@ def ruby_load(file)
 end
 
 $env.put(:"$repl", false)
-ruby_load("core.jsp")
+ruby_load(__dir__ + "/core.jsp")
 if ARGV.include? "--test"
-  ruby_load("tests.jsp")
+  ruby_load(__dir__ + "/tests.jsp")
 elsif ARGV.include? "--help"
   puts "ruby #{$0} --test to run tests"
   puts "ruby #{$0} FILENAME1 FILENAME2 to run files"
   puts "ruby #{$0} to run a repl"
 elsif ARGV.length == 0
+  $env.put(:"$file", [].to_list)
   $env.put(:"$repl", true)
   loop do
     print "> "
@@ -140,11 +142,11 @@ elsif ARGV.length == 0
   end
 else # treat each argument as a filename
   ARGV.map { |x|
-    if !File.file? x
+    if !File.file? File.expand_path(x)
       puts "#{x} is not a valid file"
       exit 1
     end
   }
 
-  ARGV.map { |x| ruby_load(x) }
+  ARGV.map { |x| ruby_load(File.expand_path(x)) }
 end

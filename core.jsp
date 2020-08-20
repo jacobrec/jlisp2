@@ -31,24 +31,32 @@
 (defmacro load (filepath)
   `(load-in-env ,filepath (current-enviroment)))
 
+(defun current-file ()
+  (car $file))
+
+(defun dir (filepath)
+  (string-join (reverse (cdr (reverse (string-split filepath "/")))) "/"))
 
 (def $tmp nil)
 (def $toplevel (current-enviroment))
 (def $required (empty-hashmap))
 (defun require (filepath)
+  (def filepath (if (string-starts-with? filepath "./")
+                    (string+ (dir (current-file)) (substring filepath 1))
+                    filepath))
   (unless (hashmap-has $required filepath)
     (hashmap-add $required filepath true)
     (load-in-env filepath $toplevel)))
 
 
-(require "src/cadr.jsp")
-(require "src/testing.jsp")
-(require "src/functional.jsp")
-(require "src/lists.jsp")
-(require "src/booleans.jsp")
-(require "src/anaphoric.jsp")
-(require "src/printing.jsp")
-(require "src/reader.jsp")
+(require "./src/cadr.jsp")
+(require "./src/testing.jsp")
+(require "./src/functional.jsp")
+(require "./src/lists.jsp")
+(require "./src/booleans.jsp")
+(require "./src/anaphoric.jsp")
+(require "./src/printing.jsp")
+(require "./src/reader.jsp")
 
 
 ;; Things that idk where to put yet

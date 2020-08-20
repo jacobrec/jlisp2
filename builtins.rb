@@ -34,6 +34,8 @@ $env.put(:throw, ->(env, args) {raise args[0]})
 $env.put(:dbg, ->(env, args) {p args[0]})
 $env.put(:exit, ->(env, args) {exit args[0]})
 
+$env.put(:reverse, ->(env, args) {args[0].to_array.reverse.to_list})
+
 $env.put(:"current-enviroment", ->(env, args) {env.clone})
 $env.put(:"set-current-enviroment", ->(env, args) {env.become(args[0])})
 
@@ -49,8 +51,12 @@ $env.put(:"*", ->(env, args) {args.to_array.reduce {|a, x| a * x}})
 $env.put(:"=", ->(env, args) {args[0] == args[1]})
 
 $env.put(:"string+", ->(env, args) {args.to_array.join})
+$env.put(:"string-starts-with?", ->(env, args) {args[0].start_with? args[1]})
 $env.put(:"string->int", ->(env, args) {(args[1] ? -1 : 1) * args[0].to_i})
 $env.put(:"string->float", ->(env, args) {(args[1] ? -1 : 1) * args[0].to_f})
+$env.put(:"substring", ->(env, args) {args[2] ? args[0][args[1], args[2]] : args[0][args[1]..]})
+$env.put(:"string-split", ->(env, args) {args[0].split(args[1]).to_list})
+$env.put(:"string-join", ->(env, args) {args[1] ? args[0].to_array.join(args[1]) : args[0].to_array.join})
 
 
 $env.put(:stdout, STDOUT)
