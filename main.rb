@@ -60,7 +60,7 @@ $env.put(:eval, ->(env, args) {
 
              when :set
                sym = fn[1]
-               val = fn[2]
+               val = jcall([:eval, fn[2]], env)
                env.set(sym, val)
                val
 

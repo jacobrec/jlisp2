@@ -112,6 +112,23 @@
 (let ((a 4))
   (testscope-a 5))
 
+(defun make-counter ()
+  (let ((a 0))
+    (fn ()
+        (set a (+ a 1))
+        a)))
+
+(def c1 (make-counter))
+(assert= 1 (c1))
+(assert= 2 (c1))
+(assert= 3 (c1))
+(def c2 (make-counter))
+(assert= 1 (c2))
+(assert= 2 (c2))
+(assert= 3 (c2))
+(assert= 4 (c1))
+(assert= 4 (c2))
+
 
 
 
