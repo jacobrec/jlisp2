@@ -89,25 +89,25 @@
     (let ((x 5))
       (assert= a 2)
       (set a 5)
-      (assert= a 5))
+      (assert= a 5 "96"))
     (assert= a 5)))
 
 (defun testscope-2 ()
   (set a 5) ; sets global variable
-  (def a 1) ; define local
-  (assert= a 1)
+  (def a 7) ; define local
+  (assert= a 7)
   (set a 6); set local
   (assert= a 6))
 
 (defun testscope-a (val)
-  (assert= val a))
+  (assert= val a "testscope-a"))
 
 (def a 1)
 (assert= a 1)
 (testscope-1)
 (assert= a 1)
 (testscope-2)  ; modifies global variable
-(assert= a 5)
+(assert= a 5 "114")
 (testscope-a 5)
 (let ((a 4))
   (testscope-a 5))
@@ -145,4 +145,4 @@
 (assert= 3 (case "z" ("a" 1) ("b" 2) 3))
 
 
-(write "All tests finished\n")
+(println "All tests finished")

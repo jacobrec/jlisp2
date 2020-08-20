@@ -17,7 +17,7 @@
 
 
 ;; readsexp
-(defun readnumber ((src stdin))
+(defun treadnumber ((src stdin))
   (def str "")
   (def is-float false)
   (def is-negative false)
@@ -43,8 +43,6 @@
 
       (true c)))
   (unreadchar (loop) stdin)
-  (unless (includes? c '("0" "1" "2" "3" "4" "5" "6" "7" "8" "9" "."))
-    (unreadchar c src))
 
   (if is-float
       (string->float str is-negative)
