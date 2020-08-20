@@ -127,7 +127,17 @@ elsif ARGV.include? "--help"
   puts "ruby #{$0} to run a repl"
 elsif ARGV.length == 0
   $env.put(:"$repl", true)
-  jcall([:repl], $env)
+  loop do
+    print "> "
+    sexp = jcall([:read], $env)
+    if sexp == :EOF
+      puts "(exit 0)"
+      break
+    end
+    res = jcall([:eval, sexp], $env)
+    print "=> "
+    puts res
+  end
 else # treat each argument as a filename
   ARGV.map { |x|
     if !File.file? x

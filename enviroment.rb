@@ -73,6 +73,14 @@ class Enviroment
     @ctx = val
   end
 
+  def ctx
+    @ctx
+  end
+
+  def become(other)
+    @ctx = other.ctx
+  end
+
   private
   def add_all(items)
     for x in items do

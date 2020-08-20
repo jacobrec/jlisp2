@@ -32,18 +32,7 @@
   `(load-in-env ,filepath (current-enviroment)))
 
 
-(defun repl ()
-  (print "> ")
-  (def v (read))
-  (unless (eof? v)
-    (def res (eval v))
-    (print "=> ")
-    (writeln res)
-    (repl))
-  (println "(exit 0)")
-  (exit 0))
-
-
+(def $tmp nil)
 (def $toplevel (current-enviroment))
 (def $required (empty-hashmap))
 (defun require (filepath)

@@ -1,7 +1,7 @@
 (assert true)
 (assert (not false))
 
-(assert (= 3 (when 1 1 2 3)))
+(assert (= 3 (when 1 9 2 3)))
 (assert (= nil (unless 1 1 2 3)))
 
 (assert (= '(1 2 3) `(1 2 3)))

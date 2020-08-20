@@ -35,6 +35,7 @@ $env.put(:dbg, ->(env, args) {p args[0]})
 $env.put(:exit, ->(env, args) {exit args[0]})
 
 $env.put(:"current-enviroment", ->(env, args) {env.clone})
+$env.put(:"set-current-enviroment", ->(env, args) {env.become(args[0])})
 
 $env.put(:"empty-hashmap", ->(env, args) {Hash.new})
 $env.put(:"hashmap-add", ->(env, args) {args[0][args[1]] = args[2]})

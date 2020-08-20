@@ -23,6 +23,7 @@
   (def is-negative false)
   (defun loop ()
     (def c (readchar src))
+    (println str ":" "[" c "]")
     (cond
       ((and (= c "-") (= str ""))
        (do
