@@ -28,19 +28,24 @@
        (do
          (set is-negative (not is-negative))
          (loop)))
+
       ((and (= c ".") (not is-float))
        (do (set is-float true)
            (string+= str c)
            (loop)))
+
       ((and (= c ".") is-float)
        (throw (string+ "invalid number literal [" str c "]")))
 
       ((includes? c '("0" "1" "2" "3" "4" "5" "6" "7" "8" "9"))
        (do (string+= str c)
            (loop)))
-      (true c))
-    c)
-  (loop)
+
+      (true c)))
+  (unreadchar (loop) stdin)
+  (unless (includes? c '("0" "1" "2" "3" "4" "5" "6" "7" "8" "9" "."))
+    (unreadchar c src))
+
   (if is-float
       (string->float str is-negative)
       (string->int str is-negative)))
