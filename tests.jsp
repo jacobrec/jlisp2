@@ -129,7 +129,15 @@
 (assert= 4 (c1))
 (assert= 4 (c2))
 
-
+(assert= (cond) nil)
+(assert= (cond (true 3)) 3)
+(assert= (cond (true (+ 1 2))) 3)
+(assert= (cond ((= 3 3) (+ 1 2))) 3)
+(assert= (cond
+           ((= 3 5) (+ 2 2))
+           ((= 3 4) (+ 3 2))
+           ((= 3 3) (+ 1 2)))
+         3)
 
 
 

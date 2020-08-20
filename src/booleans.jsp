@@ -25,3 +25,11 @@
 
 (defun or (. params)
   (or-list params))
+
+(defmacro cond (. args)
+  (if (= 0 (length args))
+      'nil
+      (let ((opt (car args)))
+        `(if ,(car opt)
+             ,(car (cdr opt))
+             (cond ,@(cdr args))))))
