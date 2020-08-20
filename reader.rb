@@ -132,11 +132,12 @@ $env.put(:readstring, ->(env, args) {
           loop do
             c = jcall(cons(:readchar, args), env)
             break if c == '"' && !escaped
-            if c == "\\"
+            if c == "\\" && !escaped
               escaped = true
             else
               if escaped
                 escapes = {
+                  "\""=>"\"",
                   "n"=>"\n",
                   "t"=>"\t",
                   "r"=>"\r",
@@ -147,8 +148,13 @@ $env.put(:readstring, ->(env, args) {
                 }
                 if escapes.include? c
                   str += escapes[c]
+                else
+                  raise "unknown escape sequence #{c}"
                 end
               else
+                if c.nil?
+                  puts str
+                end
                 str += c
               end
               escaped = false
