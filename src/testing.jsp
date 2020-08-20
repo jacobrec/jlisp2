@@ -10,7 +10,7 @@
            (write "] did not evaluate to true\n" stderr)
            (throw "Assert failed")))))
 
-(defmacro assert= (expr1 expr2)
+(defmacro assert= (expr1 expr2 (reason ""))
   `(if (= ,expr1 ,expr2) true
        (do
         (write "<" stderr)
@@ -22,6 +22,7 @@
         (write ">[" stderr)
         (write ,expr2 stderr)
         (write "]" stderr)
+        (write ,reason stderr)
         (write "\n" stderr)
         (throw "Assert failed"))))
 

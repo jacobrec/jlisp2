@@ -1,4 +1,4 @@
-;; TODO: make src an optional argument
+;; TODO: expose readtable and finish these functions
 
 ;; read
 

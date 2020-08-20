@@ -16,6 +16,18 @@ class Context
     @data[key] = val
   end
 
+  def set(key, val)
+    if @data.key? key
+      @data[key] = val
+    else
+      if !@prev.nil?
+        @prev.set(key, val)
+      else
+        raise "Cannot set value that does not exist"
+      end
+    end
+  end
+
   def prev
     @prev
   end
@@ -37,7 +49,7 @@ class Enviroment
     if @ctx.prev.nil?
       raise "no enviroment to pop"
     else
-      @ctx = @ctx.prev 
+      @ctx = @ctx.prev
     end
   end
 
@@ -46,6 +58,9 @@ class Enviroment
   end
   def put(key, val)
     @ctx.put(key, val)
+  end
+  def set(key, val)
+    @ctx.set(key, val)
   end
 
   def clone
