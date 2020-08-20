@@ -38,6 +38,12 @@ class Function
     @defaults = @args[@default_after..].map { |x| jcall([:eval, defaults[x]], env) }
   end
 
+  def set_name(name)
+    if @name.nil?
+      @name = name
+    end
+  end
+
   def body
     @body
   end
@@ -49,7 +55,11 @@ class Function
   end
 
   def to_s
-    "(fn #{args} #{body.to_s_no_outer})"
+    if @name
+      "(defun #{@name} #{args} #{body.to_s_no_outer})"
+    else
+      "(fn #{args} #{body.to_s_no_outer})"
+    end
   end
 
   def call(env, args)
@@ -64,11 +74,11 @@ class Function
       argcount = args.length
       diff = @args.length - argcount
       if diff < 0 && !@restargs
-        raise "Too many arguments to function. Expected #{@args.length} and got #{argcount}"
+        raise "Too many arguments to function #{self.to_s}. Expected #{@args.length} and got #{argcount}"
       elsif diff < 0 && @restargs # rest arguments and no defaults needed
         env.push @args.zip(args)
       elsif diff > @defaults.size
-        raise "Not enough arguments to function. Expected #{@args.length} and got #{argcount}"
+        raise "Not enough arguments to function #{self.to_s}. Expected #{@args.length} and got #{argcount}"
       else
         env.push @args.zip(args.concat(@defaults.last(diff)))
       end

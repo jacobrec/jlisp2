@@ -52,10 +52,11 @@ $env.put(:eval, ->(env, args) {
              when :quote
                fn[1]
 
-             when :def  #TODO: push scope
+             when :def
                sym = fn[1]
                val = jcall([:eval, fn[2]], env)
                env.put(sym, val)
+               val.set_name(sym) if val.respond_to? :set_name
                val
 
              when :set
