@@ -6,6 +6,13 @@
   (reduce (fn (x acc) (cons x acc))
           list '()))
 
+(defun includes? (x list)
+  (if list
+      (if (= (car list) x)
+          true
+          (includes? x (cdr list)))
+      false))
+
 (defmacro rest (x)
   `(cdr x))
 (defmacro first (x)

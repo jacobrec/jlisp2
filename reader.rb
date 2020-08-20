@@ -177,6 +177,7 @@ $env.get(:readtable).put(" ", :skip1read)
 $env.get(:readtable).put("\n", :skip1read)
 $env.get(:readtable).put("(", :readsexp)
 $env.get(:readtable).put(".", :readdot) # .2
+$env.get(:readtable).put("-", :readnumber) # .2
 for x in 0..9
   $env.get(:readtable).put(x.to_s, :readnumber)
 end

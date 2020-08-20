@@ -15,8 +15,35 @@
   (readchar src)
   (read src))
 
+
 ;; readsexp
-;; readnumber
+(defun readnumber ((src stdin))
+  (def str "")
+  (def is-float false)
+  (def is-negative false)
+  (defun loop ()
+    (def c (readchar src))
+    (cond
+      ((and (= c "-") (= str ""))
+       (do
+         (set is-negative (not is-negative))
+         (loop)))
+      ((and (= c ".") (not is-float))
+       (do (set is-float true)
+           (string+= str c)
+           (loop)))
+      ((and (= c ".") is-float)
+       (throw (string+ "invalid number literal [" str c "]")))
+
+      ((includes? c '("0" "1" "2" "3" "4" "5" "6" "7" "8" "9"))
+       (do (string+= str c)
+           (loop)))
+      (true c))
+    c)
+  (loop)
+  (if is-float
+      (string->float str is-negative)
+      (string->int str is-negative)))
 ;; readdot
 
 (defun readquote ((src stdin))
@@ -30,7 +57,7 @@
 (defun readstring ((src stdin))
   (def str "")
   (def escaped false)
-  (readchar src) ; skip leading "
+  (readchar src) ; skip leading doublequote
   (defun loop ()
     (def c (readchar src))
     (unless (and (= c "\"") (not escaped))

@@ -62,3 +62,6 @@
 (require "src/reader.jsp")
 
 
+;; Things that idk where to put yet
+(defmacro += (val offset) `(set ,val (+ ,val ,offset)))
+(defmacro string+= (val offset) `(set ,val (string+ ,val ,offset)))

@@ -44,8 +44,14 @@ $env.put(:"hashmap-has", ->(env, args) {args[0].has_key? args[1]})
 $env.put(:"hashmap-size", ->(env, args) {args[0].size})
 
 $env.put(:+, ->(env, args) {args.to_array.sum})
-$env.put(:"string+", ->(env, args) {args.to_array.join})
+$env.put(:"*", ->(env, args) {args.to_array.reduce {|a, x| a * x}})
 $env.put(:"=", ->(env, args) {args[0] == args[1]})
+
+$env.put(:"string+", ->(env, args) {args.to_array.join})
+$env.put(:"string->int", ->(env, args) {(args[1] ? -1 : 1) * args[0].to_i})
+$env.put(:"string->float", ->(env, args) {(args[1] ? -1 : 1) * args[0].to_f})
+
+
 $env.put(:stdout, STDOUT)
 $env.put(:stderr, STDERR)
 $env.put(:stdin,  STDIN)
