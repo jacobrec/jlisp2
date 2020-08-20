@@ -33,13 +33,14 @@
 
 
 (defun repl ()
-  (write "> ")
+  (print "> ")
   (def v (read))
   (unless (eof? v)
-    (write (eval v))
-    (write "\n")
+    (def res (eval v))
+    (print "=> ")
+    (writeln res)
     (repl))
-  (write "(exit 0)\n")
+  (println "(exit 0)")
   (exit 0))
 
 

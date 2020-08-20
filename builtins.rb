@@ -5,6 +5,17 @@ $env.put(:open, ->(env, args) {
 
 $env.put(:write, ->(env, args) {
            dest = (args && args[1]) || STDOUT
+           if args[0].class == String
+             dest.print(args[0].inspect)
+           else
+             dest.print(args[0])
+           end
+           dest.flush
+           args[0]
+})
+
+$env.put(:print, ->(env, args) {
+           dest = (args && args[1]) || STDOUT
            dest.print(args[0])
            dest.flush
            args[0]
