@@ -10,21 +10,6 @@
 
 ;; readchar
 ;; unreadchar
-(defun treadsymbol ((src stdin))
-  (def invalid-chars '(" " "\n" "\t" "r" "\v" "\f" "\b" ")" "(" "\""))
-  (def str "")
-  (defun loop ()
-    (def c (readchar src))
-    (if (includes? c invalid-chars)
-        c
-        (do (string+= str c)
-            (loop))))
-  (unreadchar (loop) c)
-  (cond
-    ((= "nil" str)   nil)
-    ((= "false" str) false)
-    ((= "true" str)  true)
-    (true            (string->symbol str))))
 
 (defun skip1read ((src stdin))
   (readchar src)
@@ -124,3 +109,19 @@
         (read src)
         (loop)))
   (loop))
+
+(defun readsymbol ((src stdin))
+  (def invalid-chars '(" " "\n" "\t" "\r" "\v" "\f" "\b" ")" "(" "\""))
+  (def str "")
+  (defun loop ()
+    (def c (readchar src))
+    (if (includes? c invalid-chars)
+        c
+        (do (string+= str c)
+            (loop))))
+  (unreadchar (loop) src)
+  (cond
+    ((= "nil" str)   nil)
+    ((= "false" str) false)
+    ((= "true" str)  true)
+    (true            (string->symbol str))))

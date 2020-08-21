@@ -1,5 +1,6 @@
 ;;;; Testing
 (defmacro assert (expr)
+  ;(println expr)
   `(let ((it ,expr))
      (if it it
          (do
@@ -12,6 +13,7 @@
            (throw "Assert failed")))))
 
 (defmacro assert= (expr1 expr2 (reason ""))
+  ;(println expr1 "=" expr2)
   `(if (= ,expr1 ,expr2) true
        (do
         (print "<" stderr)
