@@ -8,9 +8,6 @@
      (unreadchar x src)
      x))
 
-;; readchar
-;; unreadchar
-
 (defun skip1read ((src stdin))
   (readchar src)
   (read src))
@@ -75,12 +72,15 @@
           (readnumber src))))
 
 (defun readquote ((src stdin))
-  (readchar src) ; discards the '
-  `(quote ,(read src)))
+  `(quote ,(skip1read src)))
 (defun readquasiquote ((src stdin))
-  (readchar src) ; discards the `
-  `(quasiquote ,(read src)))
-;; readunquote
+  `(quasiquote ,(skip1read src)))
+(defun readunquote ((src stdin))
+  (readchar src) ; discards the ,
+  (if (= "@" (peekchar src))
+      (do (readchar src)
+          (list 'unquote-splice (read src)))
+      (list 'unquote (read src))))
 
 (defun readstring ((src stdin))
   (def str "")
@@ -149,6 +149,6 @@
     ((= "true" str)  true)
     (true            (string->symbol str))))
 
-#|
-After this file is loaded, the entire reader is written in jlisp
-|#
+#| After this file is loaded, the entire reader is written in jlisp
+  The only exceptions are readchar and unreadchar which are
+  implemented as builtins |#

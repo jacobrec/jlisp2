@@ -13,6 +13,9 @@
           (includes? x (cdr list)))
       false))
 
+(defun list (. items)
+  items)
+
 (defmacro rest (x)
   `(cdr x))
 (defmacro first (x)

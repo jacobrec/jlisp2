@@ -146,5 +146,9 @@
 
 (assert= (+ .3 1) 1.3)
 
+(assert= '(1 2 3) (list 1 2 3))
+(def a 2)
+(assert= '(1 2 3) (list 1 a 3))
+
 
 (println "All tests finished")
