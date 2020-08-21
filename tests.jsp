@@ -144,5 +144,7 @@
 (assert= 2 (case "b" ("a" 1) ("b" 2) 3))
 (assert= 3 (case "z" ("a" 1) ("b" 2) 3))
 
+(assert= (+ .3 1) 1.3)
+
 
 (println "All tests finished")

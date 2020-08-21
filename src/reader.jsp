@@ -36,6 +36,7 @@
   (reverse items))
 
 
+(def numeric-chars '("0" "1" "2" "3" "4" "5" "6" "7" "8" "9"))
 (defun readnumber ((src stdin))
   (def str "")
   (def is-float false)
@@ -44,7 +45,7 @@
     (def c (readchar src))
     ;(println str ":" "[" c "]")
     (cond
-      ((includes? c '("0" "1" "2" "3" "4" "5" "6" "7" "8" "9"))
+      ((includes? c numeric-chars)
        (string+= str c)
        (loop))
 
@@ -66,7 +67,12 @@
   (if is-float
       (string->float str is-negative)
       (string->int str is-negative)))
-;; readdot
+
+(defun readdot ((src stdin))
+  (readchar src) ; skip .
+  (if (not (includes? (peekchar src) numeric-chars)) '.
+      (do (unreadchar "." src)
+          (readnumber src))))
 
 (defun readquote ((src stdin))
   (readchar src) ; discards the '
