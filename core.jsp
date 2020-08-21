@@ -62,5 +62,5 @@
 (require "./src/booleans.jsp")
 (require "./src/anaphoric.jsp")
 (require "./src/printing.jsp")
-(require "./src/reader.jsp")
+;(require "./src/reader.jsp")
 (require "./src/eval.jsp")

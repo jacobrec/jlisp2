@@ -4,6 +4,11 @@ $env.put(:write, ->(env, args) {
            dest = (args && args[1]) || STDOUT
            if args[0].class == String
              dest.print(args[0].inspect)
+           elsif args[0].class == Symbol
+             dest.print("'")
+             dest.print(args[0])
+           elsif args[0].class == NilClass
+             dest.print("nil")
            else
              dest.print(args[0])
            end
@@ -18,10 +23,18 @@ $env.put(:print, ->(env, args) {
            args[0]
 })
 
+$env.put(:rubytype, ->(env, args) {args[0].class})
+$env.put(:function?, ->(env, args) {args[0].class == Function})
+$env.put(:macro?, ->(env, args) {args[0].class == Macro})
+$env.put(:true?, ->(env, args) {args[0].class == TrueClass})
+$env.put(:false?, ->(env, args) {args[0].class == FalseClass})
 $env.put(:bool?, ->(env, args) {args[0].class == TrueClass || args[0].class == FalseClass})
 $env.put(:eof?, ->(env, args) {args[0] == :EOF})
 $env.put(:nil?, ->(env, args) {args[0].nil?})
 $env.put(:list?, ->(env, args) {args[0].nil? || args[0].class == List})
+$env.put(:string?, ->(env, args) {args[0].class == String})
+$env.put(:number?, ->(env, args) {args[0].class == Integer || args[0].class == Float})
+$env.put(:symbol?, ->(env, args) {args[0].class == Symbol})
 
 $env.put(:car, ->(env, args) {args[0].car})
 $env.put(:cdr, ->(env, args) {args[0].cdr})

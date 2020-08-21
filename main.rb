@@ -12,15 +12,16 @@ require_relative "./functions"
 def jcall(sexp, env)
   sexp = sexp.to_list if sexp.class == Array
   cmd = sexp.car
-  if cmd.respond_to?(:call) && cmd.method(:call).arity == 2
-    fn = cmd
-  else
-    fn = env.get(cmd)
+  if cmd.class == Symbol
+    cmd = env.get(cmd)
   end
-  raise "Unbound function #{cmd}" if fn.nil?
-  fn.call(env, sexp.cdr)
+  raise "Unbound function #{cmd}" if !cmd.respond_to?(:call)
+  cmd.call(env, sexp.cdr)
 end
 
+$env.put(:"make-function", ->(env, args) {Function.new(args[0], args[1], env)})
+$env.put(:"make-macro", ->(env, args) {Macro.new(args[0])})
+$env.put(:proccall, ->(env, args) {args.car.car.call(env, args.car.cdr)})
 $env.put(:eval, ->(env, args) {
            env = args[1] if !args[1].nil?
            fn = args.car
@@ -100,9 +101,7 @@ $env.put(:eval, ->(env, args) {
                if env.get(fn.car).class == Macro
                  jcall([:eval, env.get(fn.car).call(env, fn.cdr)], env)
                else
-                 car = fn.car
-                 mapped_fn = map(->(x){jcall([:eval, x], env)}, fn.cdr)
-                 mapped_fn = cons(car, mapped_fn)
+                 mapped_fn = map(->(x){jcall([:eval, x], env)}, fn)
                  jcall(mapped_fn, env)
                end
              end
@@ -148,7 +147,7 @@ elsif ARGV.length == 0
     end
     res = jcall([:eval, sexp], $env)
     print "=> "
-    puts res
+    jcall([:writeln, res], $env)
   end
 else # treat each argument as a filename
   ARGV.map { |x|
