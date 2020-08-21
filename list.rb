@@ -59,7 +59,7 @@ class List
     end
   end
 
-   def ==(other)
+  def ==(other)
      other.class == List && other.car == self.car && other.cdr == self.cdr
   end
 end
