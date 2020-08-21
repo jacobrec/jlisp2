@@ -13,6 +13,14 @@
           (includes? x (cdr list)))
       false))
 
+
+(defun append (a b)
+  (cond
+    ((nil? a) b)
+    (true (cons (car a) (append (cdr a) b)))))
+(defun flatten1 (x)
+  (reduce-right (fn (x acc) (if (list? x) (append x acc) (cons x acc) x)) x '()))
+
 (defun list (. items)
   items)
 
