@@ -48,7 +48,7 @@
   (readchar src))
 
 
-(defun treadnumber ((src stdin))
+(defun readnumber ((src stdin))
   (def str "")
   (def is-float false)
   (def is-negative false)
@@ -73,7 +73,7 @@
        (throw (string+ "invalid number literal [" str c "]")))
 
       (true c)))
-  (unreadchar (loop) stdin)
+  (unreadchar (loop) src)
 
   (if is-float
       (string->float str is-negative)
