@@ -3,9 +3,10 @@ require_relative "./list"
 def jcall(sexp, env)
   sexp = sexp.to_list if sexp.class == Array
   cmd = sexp.car
-  fn = env.get(cmd)
-  if env.get(:"$stdlib")
-    #puts fn
+  if cmd.respond_to?(:call) && cmd.method(:call).arity == 2
+    fn = cmd
+  else
+    fn = env.get(cmd)
   end
   raise "Unbound function #{cmd}" if fn.nil?
   fn.call(env, sexp.cdr)

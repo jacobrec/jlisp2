@@ -16,21 +16,24 @@
   (read src))
 
 
-(defun treadsexp ((src stdin))
+(defun readsexp ((src stdin))
   (def done false)
   (def items '())
   (readchar src) ; skip leading "("
-  (env-push (env-get $env 'readtable)  ")" (fn () (set done true)))
+  ;(env-push $env)
+  (env-push (env-get $env 'readtable))
+  (env-put (env-get $env 'readtable)  ")" (fn ((src stdin)) (set done true)))
 
   (defun loop ()
     (def x (read src))
     (unless done
-      (loop))
-    (set items (cons x items)))
+      (set items (cons x items))
+      (loop)))
   (loop)
 
   (env-pop (env-get $env 'readtable))
-  (readchar src))
+  (readchar src)
+  (reverse items))
 
 
 (defun readnumber ((src stdin))
