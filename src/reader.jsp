@@ -1,6 +1,3 @@
-;; TODO: expose readtable and finish these functions
-
-;; read
 (defun read ((src stdin))
   (def c (peekchar src))
   (if (nil? c) 'EOF
@@ -13,14 +10,44 @@
 
 ;; readchar
 ;; unreadchar
-;; readsymbol
+(defun treadsymbol ((src stdin))
+  (def invalid-chars '(" " "\n" "\t" "r" "\v" "\f" "\b" ")" "(" "\""))
+  (def str "")
+  (defun loop ()
+    (def c (readchar src))
+    (if (includes? c invalid-chars)
+        c
+        (do (string+= str c)
+            (loop))))
+  (unreadchar (loop) c)
+  (cond
+    ((= "nil" str)   nil)
+    ((= "false" str) false)
+    ((= "true" str)  true)
+    (true            (string->symbol str))))
 
 (defun skip1read ((src stdin))
   (readchar src)
   (read src))
 
 
-;; readsexp
+(defun treadsexp ((src stdin))
+  (def done false)
+  (def items '())
+  (readchar src) ; skip leading "("
+  (env-push (env-get $env 'readtable)  ")" (fn () (set done true)))
+
+  (defun loop ()
+    (def x (read src))
+    (unless done
+      (loop))
+    (set items (cons x items)))
+  (loop)
+
+  (env-pop (env-get $env 'readtable))
+  (readchar src))
+
+
 (defun treadnumber ((src stdin))
   (def str "")
   (def is-float false)
@@ -79,6 +106,7 @@
                                ("t" "\t")
                                ("r" "\r")
                                ("v" "\v")
+                               ("f" "\f")
                                ("b" "\b")
                                ("\\" "\\")
                                ("\"" "\"")
@@ -89,6 +117,7 @@
   (loop)
   str)
 
+;; readhash
 (defun readcomment ((src stdin))
   (defun loop ()
     (if (= "\n" (readchar src))

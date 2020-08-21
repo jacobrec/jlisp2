@@ -1,7 +1,4 @@
-$env.put(:open, ->(env, args) {
-           write = args[1] ? "w" : "r"
-           File.open(args[0], write)
-})
+$env.put(:open, ->(env, args) {File.open(args[0], args[1] ? "w" : "r")})
 
 $env.put(:write, ->(env, args) {
            dest = (args && args[1]) || STDOUT
@@ -57,6 +54,7 @@ $env.put(:"string->float", ->(env, args) {(args[1] ? -1 : 1) * args[0].to_f})
 $env.put(:"substring", ->(env, args) {args[2] ? args[0][args[1], args[2]] : args[0][args[1]..]})
 $env.put(:"string-split", ->(env, args) {args[0].split(args[1]).to_list})
 $env.put(:"string-join", ->(env, args) {args[1] ? args[0].to_array.join(args[1]) : args[0].to_array.join})
+$env.put(:"string->symbol", ->(env, args) {args[0].to_sym})
 
 $env.put(:"env-push", ->(env, args) {args[0].push})
 $env.put(:"env-pop", ->(env, args) {args[0].pop})

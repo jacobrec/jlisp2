@@ -49,6 +49,10 @@
     (load-in-env filepath $toplevel)))
 
 
+;; Things that idk where to put yet
+(defmacro += (val offset) `(set ,val (+ ,val ,offset)))
+(defmacro string+= (val offset) `(set ,val (string+ ,val ,offset)))
+
 (require "./src/cadr.jsp")
 (require "./src/testing.jsp")
 (require "./src/functional.jsp")
@@ -59,6 +63,3 @@
 (require "./src/reader.jsp")
 
 
-;; Things that idk where to put yet
-(defmacro += (val offset) `(set ,val (+ ,val ,offset)))
-(defmacro string+= (val offset) `(set ,val (string+ ,val ,offset)))
