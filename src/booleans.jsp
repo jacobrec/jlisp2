@@ -31,7 +31,7 @@
       'nil
       (let ((opt (car args)))
         `(if ,(car opt)
-             ,(car (cdr opt))
+             (do ,@(cdr opt))
              (cond ,@(cdr args))))))
 
 (defmacro case (var . args)

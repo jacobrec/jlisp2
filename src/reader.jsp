@@ -23,24 +23,23 @@
   (def is-negative false)
   (defun loop ()
     (def c (readchar src))
-    (println str ":" "[" c "]")
+    ;(println str ":" "[" c "]")
     (cond
+      ((includes? c '("0" "1" "2" "3" "4" "5" "6" "7" "8" "9"))
+       (string+= str c)
+       (loop))
+
       ((and (= c "-") (= str ""))
-       (do
-         (set is-negative (not is-negative))
-         (loop)))
+       (set is-negative (not is-negative))
+       (loop))
 
       ((and (= c ".") (not is-float))
-       (do (set is-float true)
-           (string+= str c)
-           (loop)))
+       (set is-float true)
+       (string+= str c)
+       (loop))
 
       ((and (= c ".") is-float)
        (throw (string+ "invalid number literal [" str c "]")))
-
-      ((includes? c '("0" "1" "2" "3" "4" "5" "6" "7" "8" "9"))
-       (do (string+= str c)
-           (loop)))
 
       (true c)))
   (unreadchar (loop) stdin)
