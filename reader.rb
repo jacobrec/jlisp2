@@ -163,11 +163,24 @@ $env.put(:readstring, ->(env, args) {
           str
 })
 
+$env.put(:readhash, ->(env, args) {
+          jcall(cons(:readchar, args), env) # skip #
+          c = jcall(cons(:peekchar, args), env)
+          if c == '|'
+            read_while((args && args[0]) || STDIN, ->(str) { !str.match? /\|#/ })
+            jcall(cons(:readchar, args), env) # skip trailing #
+          else
+            raise "unknown hash sequence [##{c}]"
+          end
+          jcall(cons(:read, args), env)
+})
+
 $env.put(:readcomment, ->(env, args) {
           read_while((args && args[0]) || STDIN, ->(str) { !str.match? /\n/ })
           jcall(cons(:read, args), env)
 })
 
+$env.get(:readtable).put("#", :readhash)
 $env.get(:readtable).put(";", :readcomment)
 $env.get(:readtable).put("\"", :readstring)
 $env.get(:readtable).put("'", :readquote)

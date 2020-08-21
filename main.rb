@@ -131,7 +131,7 @@ elsif ARGV.length == 0
   $env.put(:"$repl", true)
   loop do
     print "> "
-    sexp = jcall([:read], $env)
+    sexp = jcall([:read, STDIN], $env)
     if sexp == :EOF
       puts "(exit 0)"
       break

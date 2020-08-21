@@ -23,6 +23,7 @@
   `(cdr (cdr (car ,x))))
 (defmacro cdddr (x)
   `(cdr (cdr (cdr ,x))))
+#|
 (defmacro caaaar (x)
   `(car (car (car (car ,x)))))
 (defmacro caaadr (x)
@@ -504,3 +505,4 @@
 (defmacro cdddddddr (x)
   `(cdr (cdr (cdr (cdr (cdr (cdr (cdr ,x))))))))
 
+|#
