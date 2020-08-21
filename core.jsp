@@ -21,12 +21,14 @@
 ;; location to run it from, eg. $toplevel
 (defun load-in-env (filepath env)
   (def f (open filepath))
+  (set $file (cons filepath $file))
   (defun loop ()
     (def v (read f))
     (unless (eof? v)
             (eval v env)
             (loop)))
-  (loop))
+  (loop)
+  (set $file (cdr $file)))
 
 (defmacro load (filepath)
   `(load-in-env ,filepath (current-enviroment)))
@@ -37,7 +39,6 @@
 (defun dir (filepath)
   (string-join (reverse (cdr (reverse (string-split filepath "/")))) "/"))
 
-(def $tmp nil)
 (def $toplevel (current-enviroment))
 (def $required (empty-hashmap))
 (defun require (filepath)
@@ -53,6 +54,7 @@
 (defmacro += (val offset) `(set ,val (+ ,val ,offset)))
 (defmacro string+= (val offset) `(set ,val (string+ ,val ,offset)))
 
+;; Now that require is defined, we can organize the rest of the library nicely
 (require "./src/cadr.jsp")
 (require "./src/testing.jsp")
 (require "./src/functional.jsp")
@@ -61,3 +63,4 @@
 (require "./src/anaphoric.jsp")
 (require "./src/printing.jsp")
 (require "./src/reader.jsp")
+(require "./src/eval.jsp")

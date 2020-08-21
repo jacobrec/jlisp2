@@ -8,31 +8,18 @@ require_relative "./reader"
 require_relative "./builtins"
 require_relative "./functions"
 
-
-def quasiquote_transform(args, env)
-  handle_list = ->(list) {
-    x = list.car
-    last = x
-    map ->(y){
-      last.cdr = y
-      last = last.cdr
-    }, list.cdr
-    x
-  }
-  fn = ->(x){
-    if x.class == List && x.car == :unquote
-      cons(jcall(cons(:eval, x.cdr), env), nil)
-    elsif x.class == List && x.car == :"unquote-splice"
-      jcall(cons(:eval, x.cdr), env)
-    elsif x.class == List
-      cons handle_list.call(map(fn, x)), nil
-    else
-      cons x, nil
-    end
-  }
-  handle_list.call(map(fn, args))
+# convince function for calling jlisp functions from ruby
+def jcall(sexp, env)
+  sexp = sexp.to_list if sexp.class == Array
+  cmd = sexp.car
+  if cmd.respond_to?(:call) && cmd.method(:call).arity == 2
+    fn = cmd
+  else
+    fn = env.get(cmd)
+  end
+  raise "Unbound function #{cmd}" if fn.nil?
+  fn.call(env, sexp.cdr)
 end
-
 
 $env.put(:eval, ->(env, args) {
            env = args[1] if !args[1].nil?
@@ -87,7 +74,27 @@ $env.put(:eval, ->(env, args) {
                Macro.new(Function.new(fn.cdr.car, fn.cdr.cdr, env))
 
              when :quasiquote
-               quasiquote_transform fn.cdr.car, env
+               handle_list = ->(list) {
+                 x = list.car
+                 last = x
+                 map ->(y){
+                   last.cdr = y
+                   last = last.cdr
+                 }, list.cdr
+                 x
+               }
+               mapper = ->(x){
+                 if x.class == List && x.car == :unquote
+                   cons(jcall(cons(:eval, x.cdr), env), nil)
+                 elsif x.class == List && x.car == :"unquote-splice"
+                   jcall(cons(:eval, x.cdr), env)
+                 elsif x.class == List
+                   cons handle_list.call(map(mapper, x)), nil
+                 else
+                   cons x, nil
+                 end
+               }
+               handle_list.call(map(mapper, fn[1]))
 
              else
                if env.get(fn.car).class == Macro

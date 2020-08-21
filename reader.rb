@@ -1,17 +1,5 @@
 require_relative "./list"
 
-def jcall(sexp, env)
-  sexp = sexp.to_list if sexp.class == Array
-  cmd = sexp.car
-  if cmd.respond_to?(:call) && cmd.method(:call).arity == 2
-    fn = cmd
-  else
-    fn = env.get(cmd)
-  end
-  raise "Unbound function #{cmd}" if fn.nil?
-  fn.call(env, sexp.cdr)
-end
-
 def read_while(src, cond)
   str = ""
   while cond.call(str)
