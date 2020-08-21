@@ -58,7 +58,13 @@ $env.put(:"substring", ->(env, args) {args[2] ? args[0][args[1], args[2]] : args
 $env.put(:"string-split", ->(env, args) {args[0].split(args[1]).to_list})
 $env.put(:"string-join", ->(env, args) {args[1] ? args[0].to_array.join(args[1]) : args[0].to_array.join})
 
+$env.put(:"env-push", ->(env, args) {args[0].push})
+$env.put(:"env-pop", ->(env, args) {args[0].pop})
+$env.put(:"env-put", ->(env, args) {args[0].put args[1], args[2]})
+$env.put(:"env-get", ->(env, args) {args[0].get args[1]})
+$env.put(:"env-set", ->(env, args) {args[0].set args[1], args[2]})
 
 $env.put(:stdout, STDOUT)
 $env.put(:stderr, STDERR)
 $env.put(:stdin,  STDIN)
+$env.put(:"$env",  $env)

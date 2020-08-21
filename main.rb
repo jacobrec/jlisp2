@@ -109,6 +109,7 @@ $env.put(:eval, ->(env, args) {
 
 
 def ruby_load(file)
+  puts "loading #{file}"
   $env.put(:"$file", [file].to_list)
   f = File.open(file)
   loop do
@@ -119,7 +120,9 @@ def ruby_load(file)
 end
 
 $env.put(:"$repl", false)
+$env.put(:"$stdlib", false)
 ruby_load(__dir__ + "/core.jsp")
+$env.put(:"$stdlib", true)
 if ARGV.include? "--test"
   ruby_load(__dir__ + "/tests.jsp")
 elsif ARGV.include? "--help"

@@ -4,6 +4,9 @@ def jcall(sexp, env)
   sexp = sexp.to_list if sexp.class == Array
   cmd = sexp.car
   fn = env.get(cmd)
+  if env.get(:"$stdlib")
+    #puts fn
+  end
   raise "Unbound function #{cmd}" if fn.nil?
   fn.call(env, sexp.cdr)
 end
@@ -24,7 +27,7 @@ $env.put(:read, ->(env, args) {
           return :EOF if c.nil?
           fn = env.get(:readtable).get(c)
           fn = :readsymbol if fn.nil?
-          res = jcall(cons(fn, args), env)
+          jcall(cons(fn, args), env)
 })
 
 $env.put(:peekchar, ->(env, args) {

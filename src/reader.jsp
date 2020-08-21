@@ -1,6 +1,10 @@
 ;; TODO: expose readtable and finish these functions
 
 ;; read
+(defun read ((src stdin))
+  (def c (peekchar src))
+  (if (nil? c) 'EOF
+      (eval `(,(or (env-get (env-get $env 'readtable) c) 'readsymbol) src))))
 
 (defun peekchar ((src stdin))
   (let ((x (readchar src)))
