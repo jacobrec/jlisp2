@@ -111,13 +111,27 @@
   (loop)
   str)
 
-;; readhash
+(defun readhash ((src stdin))
+  (readchar src) ; skip #
+  (defun readtil2 (to)
+    (def first (readchar src))
+    (def second (peekchar src))
+    (if (= to (string+ first second))
+      (readchar src)
+      (readtil2 to)))
+  (def c (peekchar src))
+  (cond
+    ((= c "|") (readtil2 "|#"))
+    (true (throw (string+ "Unknown hash sequence [#" c "]"))))
+  (read src))
+
 (defun readcomment ((src stdin))
   (defun loop ()
     (if (= "\n" (readchar src))
         (read src)
         (loop)))
   (loop))
+
 
 (defun readsymbol ((src stdin))
   (def invalid-chars '(" " "\n" "\t" "\r" "\v" "\f" "\b" ")" "(" "\""))
@@ -134,3 +148,7 @@
     ((= "false" str) false)
     ((= "true" str)  true)
     (true            (string->symbol str))))
+
+#|
+After this file is loaded, the entire reader is written in jlisp
+|#
