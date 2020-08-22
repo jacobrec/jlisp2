@@ -127,10 +127,10 @@ end
 
 $env.put(:"$repl", false)
 $env.put(:"$stdlib", false)
-ruby_load(__dir__ + "/core.jsp")
+ruby_load(__dir__ + "/../lib/core.jsp")
 $env.put(:"$stdlib", true)
 if ARGV.include? "--test"
-  ruby_load(__dir__ + "/tests.jsp")
+  ruby_load(__dir__ + "/../tests.jsp")
 elsif ARGV.include? "--help"
   puts "ruby #{$0} --test to run tests"
   puts "ruby #{$0} FILENAME1 FILENAME2 to run files"
