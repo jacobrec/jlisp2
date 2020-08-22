@@ -1,0 +1,22 @@
+* JLisp2
+  The sequel to the classic
+
+** Self hosting
+   JLisp2 is an interpreter, but it's one that's self hosting. While
+   the inital implementation was written in Ruby, all of the read and
+   eval functionality was rewritten in jlisp itself
+
+** Speed
+   JLisp2 is functional self interpreter, however, the lisp
+   interpreter running on a ruby interpreter is really slow. No
+   benchmarks are provided, you'll have to trust me on that.
+
+** Features
+   Macros, Reader Macros, Closures, and Lists. Everything you could want in a
+   lisp. It also features hashmaps as a builtin datatype. For
+   convince, functions support optional, and rest arguments.
+
+** Minimal language
+   The language has minimal special forms, =if=, =def=, =set=, =let=,
+   =quasiquote=, =quote=, =fn=, and, =macro=. Everything else is just
+   a function.
