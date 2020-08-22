@@ -20,3 +20,7 @@
    The language has minimal special forms, =if=, =def=, =set=, =let=,
    =quasiquote=, =quote=, =fn=, and, =macro=. Everything else is just
    a function.
+
+** Note
+   The "java" code that github says is here is actually jlisp code. Likely
+   due to the jsp file extension
