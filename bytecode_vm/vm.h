@@ -2,7 +2,10 @@
 
 #include <stdint.h>
 
+#include "stack.h"
+
 struct VM {
+    struct stack* stack;
     char* data;
     uint32_t ip;
     uint32_t data_size;

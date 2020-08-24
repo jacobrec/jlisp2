@@ -53,4 +53,11 @@ int main() {
     }
 
     stack_free(stack);
+
+    struct VM vm;
+    init_vm(&vm);
+    char data[6] = {1, 1, 1, 2, 2, 3};
+    run(&vm, data, 6);
+
+
 }

@@ -25,6 +25,7 @@ void shrinkif(struct stack* s) {
 }
 
 void stack_push(struct stack* s, jlisp_type t) {
+    // printf("data=%X, size= %d, cap= %d\n", s->data, s->size, s->capacity);
     growif(s);
     s->data[s->size++] = t;
 }
