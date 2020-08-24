@@ -22,7 +22,7 @@ $(BUILDDIR):
 	mkdir -p $(BUILDDIR)
 
 $(BUILDDIR)/%.o: %.c
-	$(CC) $< -c -o $@
+	$(CC) $(CFLAGS) $< -c -o $@
 
 run: main
 	./bin/main
