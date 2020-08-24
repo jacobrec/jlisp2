@@ -32,7 +32,15 @@ void run(struct VM* vm, char* data, int length) {
         enum token v = NEXT();
         DPRINT("-> %s ", token_to_string(v));
         switch(v) {
-        case STRING1: {break;}
+        case STRING1: {
+            int chars = NEXT();
+            char str[chars];
+            for (int i = 0; i < chars; i++) {
+                str[i] = NEXT();
+            }
+            // TODO: make strings a jlisp type
+            break;
+        }
         case INT1: {
             stack_push(vm->stack, jlisp_int32(NEXT()));
             break;

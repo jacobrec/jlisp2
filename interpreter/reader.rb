@@ -171,6 +171,11 @@ $env.put(:readcomment, ->(env, args) {
           read_while((args && args[0]) || STDIN, ->(str) { !str.match? /\n/ })
           jcall(cons(:read, args), env)
 })
+$env.put(:readline, ->(env, args) {
+          s = read_while((args && args[0]) || STDIN, ->(str) { !str.match? /\n/ })[..-2]
+          jcall(cons(:readchar, args), env) # skip trailing \n
+          s
+})
 
 $env.get(:readtable).put("#", :readhash)
 $env.get(:readtable).put(";", :readcomment)

@@ -59,5 +59,8 @@ int main() {
     char data[6] = {1, 1, 1, 2, 2, 3};
     run(&vm, data, 6);
 
+    char data2[9] = {0, 6, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0, 3};
+    run(&vm, data2, 9);
+
 
 }

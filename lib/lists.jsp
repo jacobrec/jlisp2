@@ -13,6 +13,16 @@
           (includes? x (cdr list)))
       false))
 
+
+(defun iota (x)
+  (defun iota-inner (x)
+    (cond
+      ((= 0 x) nil)
+      ;((> 0 x) (throw "iota requires a positive integer"))
+      (true (cons (minus x 1)
+                  (iota-inner (minus x 1))))))
+  (reverse (iota-inner x)))
+
 ;; alist get
 (defun assoc-get (key list)
   (cdr (assoc key list)))

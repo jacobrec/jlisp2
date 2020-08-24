@@ -1,4 +1,15 @@
-$env.put(:open, ->(env, args) {File.open(args[0], args[1] ? "w" : "r")})
+$env.put(:open, ->(env, args) {File.open(args[0], (p args[1]) ? "w+" : "r")})
+
+$env.put(:"write-byte", ->(env, args) {
+           dest = (args && args[1]) || STDOUT
+           if args[0].class == String
+             dest.print(args[0])
+           elsif args[0].class == Integer && args[0] < 255 && args[0] >= 0
+             dest.print(args[0].chr)
+           else
+             raise "#{args[0]} of type #{args[0].class} is not of type to write byte"
+           end
+})
 
 $env.put(:write, ->(env, args) {
            dest = (args && args[1]) || STDOUT
@@ -34,6 +45,8 @@ $env.put(:nil?, ->(env, args) {args[0].nil?})
 $env.put(:list?, ->(env, args) {args[0].nil? || args[0].class == List})
 $env.put(:string?, ->(env, args) {args[0].class == String})
 $env.put(:number?, ->(env, args) {args[0].class == Integer || args[0].class == Float})
+$env.put(:int?, ->(env, args) {args[0].class == Integer})
+$env.put(:float?, ->(env, args) {args[0].class == Float})
 $env.put(:symbol?, ->(env, args) {args[0].class == Symbol})
 
 $env.put(:"car-set", ->(env, args) {args[0].car = args[1]})
@@ -61,6 +74,7 @@ $env.put(:"hashmap-size", ->(env, args) {args[0].size})
 $env.put(:"+", ->(env, args) {args.to_array.sum})
 $env.put(:"minus", ->(env, args) {args.to_array.reduce {|a, x| a - x}})
 $env.put(:"<", ->(env, args) {args[0] < args[1]})
+$env.put(:">", ->(env, args) {args[0] > args[1]})
 $env.put(:"*", ->(env, args) {args.to_array.reduce {|a, x| a * x}})
 $env.put(:"=", ->(env, args) {args[0] == args[1]})
 
@@ -72,6 +86,11 @@ $env.put(:"substring", ->(env, args) {args[2] ? args[0][args[1], args[2]] : args
 $env.put(:"string-split", ->(env, args) {args[0].split(args[1]).to_list})
 $env.put(:"string-join", ->(env, args) {args[1] ? args[0].to_array.join(args[1]) : args[0].to_array.join})
 $env.put(:"string->symbol", ->(env, args) {args[0].to_sym})
+$env.put(:"string-at", ->(env, args) {args[0][args[1]]})
+$env.put(:"string-length", ->(env, args) {args[0].length})
+
+$env.put(:"char->int", ->(env, args) {args[0].ord})
+$env.put(:"int->char", ->(env, args) {args[0].chr})
 
 $env.put(:"env-push", ->(env, args) {args[0].push})
 $env.put(:"env-pop", ->(env, args) {args[0].pop})

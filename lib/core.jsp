@@ -54,6 +54,9 @@
 (defmacro += (val offset) `(set ,val (+ ,val ,offset)))
 (defmacro string+= (val offset) `(set ,val (string+ ,val ,offset)))
 
+; (defun - (a b) (minus a b))
+
+
 ;; Now that require is defined, we can organize the rest of the library nicely
 (require "./cadr.jsp")
 (require "./testing.jsp")
@@ -62,5 +65,7 @@
 (require "./booleans.jsp")
 (require "./anaphoric.jsp")
 (require "./printing.jsp")
-(require "./reader.jsp")
-(require "./eval.jsp")
+
+; this makes it really slow
+;(require "./reader.jsp")
+;(require "./eval.jsp")
