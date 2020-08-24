@@ -3,7 +3,7 @@
 
 
 #include "symboltable.h"
-#include "bin/tokens.c"
+#include "bin/tokens.h"
 #include "vm.h"
 #include "types.h"
 #include "stack.h"
