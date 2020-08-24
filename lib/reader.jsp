@@ -149,6 +149,14 @@
     ((= "true" str)  true)
     (true            (string->symbol str))))
 
+(defun readline ((src stdin))
+  (def str "")
+  (defun loop ()
+    (def c (readchar src))
+    (if (or (= "\n" c) (nil? c) (eof? c)) str
+        (do (string+= str c) (loop))))
+  (loop))
+
 #| After this file is loaded, the entire reader is written in jlisp
   The only exceptions are readchar and unreadchar which are
   implemented as builtins |#

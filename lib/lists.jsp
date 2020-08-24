@@ -13,6 +13,24 @@
           (includes? x (cdr list)))
       false))
 
+;; alist get
+(defun assoc-get (key list)
+  (cdr (assoc key list)))
+(defun assoc-set (key nval list)
+  (def a (assoc key list))
+  (cdr-set a nval)
+  a)
+(defun assoc (key list)
+  (if list
+    (if (= key (caar list))
+        (car list)
+        (assoc key (cdr list)))
+    nil))
+(defun acons (key value list)
+  (cons
+   (cons key value)
+   list))
+
 
 (defun append (a b)
   (cond

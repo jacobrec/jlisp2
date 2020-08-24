@@ -36,6 +36,8 @@ $env.put(:string?, ->(env, args) {args[0].class == String})
 $env.put(:number?, ->(env, args) {args[0].class == Integer || args[0].class == Float})
 $env.put(:symbol?, ->(env, args) {args[0].class == Symbol})
 
+$env.put(:"car-set", ->(env, args) {args[0].car = args[1]})
+$env.put(:"cdr-set", ->(env, args) {args[0].cdr = args[1]})
 $env.put(:car, ->(env, args) {args[0].car})
 $env.put(:cdr, ->(env, args) {args[0].cdr})
 $env.put(:cons, ->(env, args) {cons args[0], args[1]})

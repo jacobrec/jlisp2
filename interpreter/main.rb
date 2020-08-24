@@ -15,7 +15,7 @@ def jcall(sexp, env)
   if cmd.class == Symbol
     cmd = env.get(cmd)
   end
-  raise "Unbound function #{cmd}" if !cmd.respond_to?(:call)
+  raise "Unbound function #{sexp}" if !cmd.respond_to?(:call)
   cmd.call(env, sexp.cdr)
 end
 
