@@ -94,7 +94,7 @@ char* jlisp_value_to_string(jlisp_type t) {
         return s;
     } else if (is_jlisp_int32(t)) {
         char* s;
-        asprintf(&s, "%d", t.data & BITS32);
+        asprintf(&s, "%ld", t.data & BITS32);
         return s;
     } else if (is_jlisp_pointer(t)) {
         return "pointer";

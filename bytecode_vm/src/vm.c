@@ -1,10 +1,11 @@
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 #include <stdio.h>
 
 #include "vm.h"
 #include "types.h"
-#include "bin/tokens.h"
+#include "tokens.h"
 
 #define DEBUG
 #ifdef DEBUG

@@ -1,8 +1,8 @@
-CC=gcc
-CFLAGS=-g -lm
-
 BUILDDIR=bin
-SOURCEDIR=.
+SOURCEDIR=src
+
+CC=gcc
+CFLAGS=-g -lm -I$(BUILDDIR) -D_GNU_SOURCE
 
 HEADERS = $(wildcard $(SOURCEDIR)/*.h)
 SOURCES = $(wildcard $(SOURCEDIR)/*.c)
@@ -30,7 +30,7 @@ $(BUILDDIR):
 $(BUILDDIR)/tokens.o: $(BUILDDIR)/tokens.c $(BUILDDIR)/tokens.h
 	$(CC) $(CFLAGS) $< -c -o $@
 
-$(BUILDDIR)/%.o: %.c $(HEADERS)
+$(BUILDDIR)/%.o: $(SOURCEDIR)/%.c $(HEADERS)
 	$(CC) $(CFLAGS) $< -c -o $@
 
 run: main

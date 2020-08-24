@@ -3,7 +3,7 @@
 
 
 #include "symboltable.h"
-#include "bin/tokens.h"
+#include "tokens.h"
 #include "vm.h"
 #include "types.h"
 #include "stack.h"
@@ -45,7 +45,7 @@ int main() {
     t = jlisp_true(); stack_push(stack, t);
     t = jlisp_false(); stack_push(stack, t);
     t = jlisp_nil(); stack_push(stack, t);
-    t = jlisp_pointer(1); stack_push(stack, t);
+    t = jlisp_pointer(NULL+1); stack_push(stack, t);
 
     while (stack->size > 0) {
         t = stack_pop(stack);
