@@ -23,7 +23,7 @@ typedef union jlisp_type jlisp_type;
 #define BITS_UNUSED2      0b100l
 #define BITS_UNUSED3      0b011l
 #define BITS_UNUSED4      0b010l
-#define BITS_UNUSED5      0b001l
+#define BITS_STR_PTR      0b001l
 #define BITS_POINTER      0b000l
 
 #define BITS_SPECIAL_NIL   0b01
@@ -51,6 +51,9 @@ bool is_jlisp_int32(jlisp_type data);
 
 jlisp_type jlisp_pointer(void* data);
 bool is_jlisp_pointer(jlisp_type data);
+
+jlisp_type jlisp_string(char* data);
+bool is_jlisp_string(jlisp_type data);
 
 
 char* jlisp_typeof(jlisp_type t);

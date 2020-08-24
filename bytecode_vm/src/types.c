@@ -62,6 +62,17 @@ bool is_jlisp_pointer(jlisp_type data) {
     return IS_TYPE(data.data, BITS_POINTER) && (data.data & BITS48) != 0;
 }
 
+jlisp_type jlisp_string(char* data) {
+    assert(data != NULL); // use jlisp nil instead
+    assert(data == ((uint64_t)data & BITS48)); // use jlisp nil instead
+    jlisp_type t;
+    t.data = TYPE(BITS_STR_PTR) | ((uint64_t)data & BITS48);
+    return t;
+}
+bool is_jlisp_string(jlisp_type data) {
+    return IS_TYPE(data.data, BITS_STR_PTR) && (data.data & BITS48) != 0;
+}
+
 char* jlisp_typeof(jlisp_type t) {
     if (is_jlisp_nil(t)) {
         return "nil";
@@ -73,6 +84,8 @@ char* jlisp_typeof(jlisp_type t) {
         return "uint48";
     } else if (is_jlisp_int32(t)) {
         return "int32";
+    } else if (is_jlisp_string(t)) {
+        return "string";
     } else if (is_jlisp_pointer(t)) {
         return "pointer";
     } else {
@@ -96,6 +109,8 @@ char* jlisp_value_to_string(jlisp_type t) {
         char* s;
         asprintf(&s, "%ld", t.data & BITS32);
         return s;
+    } else if (is_jlisp_string(t)) {
+        return (char*)(t.data & BITS48);
     } else if (is_jlisp_pointer(t)) {
         return "pointer";
     } else {
