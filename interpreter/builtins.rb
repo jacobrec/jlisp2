@@ -1,4 +1,4 @@
-$env.put(:open, ->(env, args) {File.open(args[0], (p args[1]) ? "w+" : "r")})
+$env.put(:open, ->(env, args) {File.open(args[0], args[1] ? "w+" : "r")})
 
 $env.put(:"write-byte", ->(env, args) {
            dest = (args && args[1]) || STDOUT
@@ -102,3 +102,4 @@ $env.put(:stdout, STDOUT)
 $env.put(:stderr, STDERR)
 $env.put(:stdin,  STDIN)
 $env.put(:"$env",  $env)
+

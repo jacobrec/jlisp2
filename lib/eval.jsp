@@ -2,6 +2,23 @@
 (def nil nil)
 (def true true)
 
+(defun macroexpand-1 (y)
+  (if (nil? y) nil
+    (if (not (list? y)) y
+      (let ((v (eval (car y))))
+        (if (macro? v)
+          (proccall (cons v (cdr y)))
+          y)))))
+
+(defun macroexpand-all (y)
+  (cond
+    ((not (list? y)) y)
+    ((nil? y) nil)
+    ((= 'quote (car y)) y)
+    (true (let ((z (macroexpand-1 y)))
+            (cons (macroexpand-all (car z))
+                  (macroexpand-all (cdr z)))))))
+
 (defun eval1 (sexp (env $env))
   (cond
     ((and (list? sexp) (not (nil? sexp)))
@@ -40,7 +57,7 @@
 
        (do
         (if (macro? (eval1 (car sexp)))
-          (eval1 (proccall `(,(eval1 (car sexp)) ,@(cdr sexp))))
+          (eval1 (macroexpand sexp))
           (proccall (map (fn (x) (eval1 x)) sexp))))))
     ((false? sexp) false) ; return true or false if true or false
     ((true? sexp) true) ; return true or false if true or false

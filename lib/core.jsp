@@ -68,4 +68,4 @@
 
 ; this makes it really slow
 ;(require "./reader.jsp")
-;(require "./eval.jsp")
+(require "./eval.jsp")

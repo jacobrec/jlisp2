@@ -22,6 +22,10 @@ end
 $env.put(:"make-function", ->(env, args) {Function.new(args[0], args[1], env)})
 $env.put(:"make-macro", ->(env, args) {Macro.new(args[0])})
 $env.put(:proccall, ->(env, args) {args.car.car.call(env, args.car.cdr)})
+$env.put(:macroexpand, ->(env, args) {
+           fn = args[0]
+           env.get(fn.car).call(env, fn.cdr)
+})
 $env.put(:eval, ->(env, args) {
            env = args[1] if !args[1].nil?
            fn = args.car
@@ -99,7 +103,7 @@ $env.put(:eval, ->(env, args) {
 
              else
                if env.get(fn.car).class == Macro
-                 jcall([:eval, env.get(fn.car).call(env, fn.cdr)], env)
+                 jcall([:eval, jcall([:macroexpand, fn], env)], env)
                else
                  mapped_fn = map(->(x){jcall([:eval, x], env)}, fn)
                  jcall(mapped_fn, env)

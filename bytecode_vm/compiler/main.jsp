@@ -39,11 +39,33 @@
 (defun emit-op (out opcode . args)
   (def byte-op (assoc-get opcode toks))
   (write-byte byte-op out)
-  (map (fn (x) (emit-lit out x)) args)
-  (newline))
+  (map (fn (x) (emit-lit out x)) args))
 
 (def items toks)
 (println items)
 (emit-op (ropen "/../tmp" true) 'STRING1 "Hello")
 
-;(repl1)
+(defmacro push (val list)
+  `(set ,list (cons ,val ,list)))
+
+(defun free-vars (form)
+  (assert= 'fn (first form))
+  (def args (second form))
+  (def bodies (cddr form))
+  (def free '())
+  (defun check-free (form)
+    (cond
+      ((nil? form) nil)
+      ((symbol? form)
+       (unless (includes? form args)
+         (push form free)))
+      ((not (list? form)) nil)
+      ((= 'quote (car form)) nil)
+      (true
+       (do (check-free (car form))
+           (check-free (cdr form))))))
+  (check-free bodies)
+  free)
+
+(println (free-vars '(fn (x) (+ x y))))
+(println (macroexpand-all '(defun test () 5)))
