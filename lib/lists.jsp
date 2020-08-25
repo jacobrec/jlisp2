@@ -6,6 +6,14 @@
   (reduce (fn (x acc) (cons x acc))
           list '()))
 
+(defun index-of (x list)
+  (defun index-of-inner (c list)
+    (cond
+      ((nil? list) nil)
+      ((= x (car list)) c)
+      (true (index-of-inner (+ 1 c) (cdr list)))))
+  (index-of-inner 0 list))
+
 (defun includes? (x list)
   (if list
       (if (= (car list) x)

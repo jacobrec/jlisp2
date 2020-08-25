@@ -12,12 +12,19 @@
 
 (defun macroexpand-all (y)
   (cond
-    ((not (list? y)) y)
     ((nil? y) nil)
-    ((= 'quote (car y)) y)
-    (true (let ((z (macroexpand-1 y)))
-            (cons (macroexpand-all (car z))
-                  (macroexpand-all (cdr z)))))))
+    ((not (list? y)) y)
+    (case (car y)
+      ('if `(if ,(macroexpand-all (second sexp))
+                ,(macroexpand-all (third sexp))
+                ,(macroexpand-all (fourth sexp))))
+      ('quote y)
+      ('def `(def ,(second sexp) ,(macroexpand-all sexp)))
+      ('set `(set ,(second sexp) ,(macroexpand-all sexp)))
+      ('let 0)
+      ('fn `(fn ,(second sexp) ,@(map macroexpand-all (cddr sexp))))
+      ('macro (macro ,(second sexp) ,@(map macroexpand-all (cddr sexp))))
+      sexp)))
 
 (defun eval1 (sexp (env $env))
   (cond
