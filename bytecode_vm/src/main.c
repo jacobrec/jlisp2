@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
 
@@ -56,11 +57,27 @@ int main() {
 
     struct VM vm;
     init_vm(&vm);
-    char data[6] = {1, 1, 1, 2, 2, 3};
+    // (+ 1 2)
+    char data[] = {1, 1, 1, 2, 2, 3};
     run(&vm, data, 6);
 
-    char data2[9] = {0, 6, 0x48, 0x65, 0x6c, 0x6c, 0x6f, 0, 3};
+    // "hello"
+    char data2[] = {0, 6, 72, 101, 108, 108, 111, 0, 3};
     run(&vm, data2, 9);
 
+    // ((fn (x y) (+ x y)) 40 9)
+    char data3[] = {7, 6, 72, 101, 108, 108, 111, 0, // start function named "hello"
+                    6, // bytes in body
+                    6, 0, //load first arg
+                    6, 1, // load second arg
+                    2, // add args
+                    5, // return
+                    // end of function
+                    1, 40, 1, 9, // load the 2 args [40], and [9]
+                    4, 2,/*<-Arg count. Fn name ->*/ 6, 72, 101, 108, 108, 111, 0,
+                    // [4]^ call function named hello, with 2 args
+                    3 // end
+    };
+    run(&vm, data3, 29);
 
 }
