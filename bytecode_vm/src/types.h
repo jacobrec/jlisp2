@@ -10,6 +10,11 @@ union jlisp_type {
 };
 typedef union jlisp_type jlisp_type;
 
+struct jlisp_cons_cell {
+    jlisp_type car;
+    jlisp_type cdr;
+};
+
 #define BITS48 0xFFFFFFFFFFFF
 #define BITS32 0xFFFFFFFF
 #define BITS3  0b111l
@@ -20,9 +25,9 @@ typedef union jlisp_type jlisp_type;
 #define BITS_UNSIGNED_INT 0b111l
 #define BITS_SIGNED_INT   0b110l
 #define BITS_SPECIAL      0b101l
-#define BITS_UNUSED2      0b100l
-#define BITS_UNUSED3      0b011l
-#define BITS_UNUSED4      0b010l
+#define BITS_CLOSURE      0b100l
+#define BITS_CON_PTR      0b011l
+#define BITS_FUN_PTR      0b010l
 #define BITS_STR_PTR      0b001l
 #define BITS_POINTER      0b000l
 
@@ -33,6 +38,17 @@ typedef union jlisp_type jlisp_type;
 #define SPECIAL(bits) (TYPE(BITS_SPECIAL) | bits)
 #define IS_TYPE(data, type) (((data) & TYPE(BITS3)) == (TYPE(type)))
 
+jlisp_type jlisp_car(jlisp_type cons);
+jlisp_type jlisp_cdr(jlisp_type cons);
+
+jlisp_type jlisp_function();
+bool is_jlisp_function(jlisp_type data);
+
+jlisp_type jlisp_closure();
+bool is_jlisp_closure(jlisp_type data);
+
+jlisp_type jlisp_cons();
+bool is_jlisp_cons(jlisp_type data);
 
 jlisp_type jlisp_nil();
 bool is_jlisp_nil(jlisp_type data);

@@ -4,6 +4,61 @@
 #include <assert.h>
 
 #include "types.h"
+#include "memory.h"
+
+jlisp_type jlisp_car_cdr(jlisp_type cons, bool iscar) {
+    if (is_jlisp_cons(cons)) {
+        struct jlisp_cons_cell* cell = ((struct jlisp_cons_cell*) (cons.data & BITS48));
+        return iscar ? cell->car : cell->cdr;
+    } else {
+        printf("Cannot take %s of non cons", iscar ? "car" : "cdr");
+        assert(0);
+    }
+}
+jlisp_type jlisp_car(jlisp_type cons) {
+    jlisp_car_cdr(cons, true);
+}
+jlisp_type jlisp_cdr(jlisp_type cons) {
+    jlisp_car_cdr(cons, false);
+}
+
+jlisp_type jlisp_closure(jlisp_type function, jlisp_type values) {
+    jlisp_type t = jlisp_allocate();
+    uint64_t ptr = t.data & BITS48;
+
+    struct jlisp_cons_cell* cell = ((struct jlisp_cons_cell*) ptr);
+    cell->car = function;
+    cell->cdr = values;
+    t.data = TYPE(BITS_CLOSURE) | ptr;
+    return t;
+}
+bool is_jlisp_closure(jlisp_type data) {
+    return IS_TYPE(data.data, BITS_CLOSURE);
+}
+
+jlisp_type jlisp_cons(jlisp_type car, jlisp_type cdr) {
+    jlisp_type t = jlisp_allocate();
+    uint64_t ptr = t.data & BITS48;
+
+    struct jlisp_cons_cell* cell = ((struct jlisp_cons_cell*) ptr);
+    cell->car = car;
+    cell->cdr = cdr;
+
+    t.data = TYPE(BITS_CON_PTR) | ptr;
+    return t;
+}
+bool is_jlisp_cons(jlisp_type data) {
+    return IS_TYPE(data.data, BITS_CON_PTR);
+}
+
+jlisp_type jlisp_function(uint32_t addr) {
+    jlisp_type t;
+    t.data = TYPE(BITS_FUN_PTR) | (addr & BITS32);
+    return t;
+}
+bool is_jlisp_function(jlisp_type data) {
+    return IS_TYPE(data.data, BITS_FUN_PTR);
+}
 
 
 jlisp_type jlisp_nil() {
@@ -54,6 +109,7 @@ bool is_jlisp_int32(jlisp_type data) {
 
 jlisp_type jlisp_pointer(void* data) {
     assert(data != NULL); // use jlisp nil instead
+    assert(data == ((uint64_t)data & BITS48));
     jlisp_type t;
     t.data = TYPE(BITS_POINTER) | ((uint64_t)data & BITS48);
     return t;
@@ -64,7 +120,7 @@ bool is_jlisp_pointer(jlisp_type data) {
 
 jlisp_type jlisp_string(char* data) {
     assert(data != NULL); // use jlisp nil instead
-    assert(data == ((uint64_t)data & BITS48)); // use jlisp nil instead
+    assert(data == ((uint64_t)data & BITS48));
     jlisp_type t;
     t.data = TYPE(BITS_STR_PTR) | ((uint64_t)data & BITS48);
     return t;
@@ -86,6 +142,12 @@ char* jlisp_typeof(jlisp_type t) {
         return "int32";
     } else if (is_jlisp_string(t)) {
         return "string";
+    } else if (is_jlisp_cons(t)) {
+        return "cons";
+    } else if (is_jlisp_closure(t)) {
+        return "closure";
+    } else if (is_jlisp_function(t)) {
+        return "function";
     } else if (is_jlisp_pointer(t)) {
         return "pointer";
     } else {
@@ -93,7 +155,7 @@ char* jlisp_typeof(jlisp_type t) {
     }
 }
 
-// TODO: have this return a jlisp_type
+// TODO: have this return a jlisp_type and not memory leak
 char* jlisp_value_to_string(jlisp_type t) {
     if (is_jlisp_nil(t)) {
         return "nil";
@@ -107,10 +169,20 @@ char* jlisp_value_to_string(jlisp_type t) {
         return s;
     } else if (is_jlisp_int32(t)) {
         char* s;
-        asprintf(&s, "%ld", t.data & BITS32);
+        asprintf(&s, "%d", t.data & BITS32);
         return s;
     } else if (is_jlisp_string(t)) {
         return (char*)(t.data & BITS48);
+    } else if (is_jlisp_cons(t)) {
+        char* s;
+        char* car = jlisp_value_to_string(jlisp_car(t));
+        char* cdr = jlisp_value_to_string(jlisp_cdr(t));
+        asprintf(&s, "(%s . %s)", car, cdr);
+        return s;
+    } else if (is_jlisp_closure(t)) {
+        return "closure";
+    } else if (is_jlisp_function(t)) {
+        return "function";
     } else if (is_jlisp_pointer(t)) {
         return "pointer";
     } else {

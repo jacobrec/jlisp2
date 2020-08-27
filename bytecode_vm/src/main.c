@@ -8,6 +8,7 @@
 #include "vm.h"
 #include "types.h"
 #include "stack.h"
+#include "memory.h"
 
 int printbits (uint64_t d) {
     for (int i = 64; i > 0; i--) {
@@ -47,6 +48,7 @@ int main() {
     t = jlisp_false(); stack_push(stack, t);
     t = jlisp_nil(); stack_push(stack, t);
     t = jlisp_pointer(NULL+1); stack_push(stack, t);
+    t = jlisp_cons(jlisp_int32(-5), jlisp_string("end")); stack_push(stack, t);
 
     while (stack->size > 0) {
         t = stack_pop(stack);
@@ -67,6 +69,7 @@ int main() {
 
     // ((fn (x y) (+ x y)) 40 9)
     char data3[] = {7, 6, 72, 101, 108, 108, 111, 0, // start function named "hello"
+                    2, //arity
                     6, // bytes in body
                     6, 0, //load first arg
                     6, 1, // load second arg
@@ -78,7 +81,7 @@ int main() {
                     // [4]^ call function named hello, with 2 args
                     3 // end
     };
-    run(&vm, data3, 29);
+    run(&vm, data3, 30);
 
     // (if true "true" "false")
     char data4[] = {
@@ -104,8 +107,15 @@ int main() {
 
     // ((fn (x) x) 5)
     char data6[] = {
-        0x07, 0x08, 0x66, 0x6e, 0x3b, 0x74, 0x65, 0x73, 0x74, 0x00, 0x03, 0x06, 0x00, 0x05, 0x01, 0x05, 0x04, 0x01, 0x08, 0x66, 0x6e, 0x3b, 0x74, 0x65, 0x73, 0x74, 0x00, 0x03
+        0x07, 0x08, 0x66, 0x6e, 0x3b, 0x74, 0x65, 0x73, 0x74, 0x00,
+        1, // arity
+        0x03, // body length
+        0x06, 0x00, /*local 0*/ 0x05,/*return*/ // function body
+        0x01, 0x05, // arg 1
+        0x04, 0x01, // call [n]
+        0x08, 0x66, 0x6e, 0x3b, 0x74, 0x65, 0x73, 0x74, 0x00, // function name
+        0x03 // end
     };
-    run(&vm, data6, 28);
+    run(&vm, data6, 31);
 
 }

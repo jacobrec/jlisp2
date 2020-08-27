@@ -23,6 +23,7 @@ void init_vm(struct VM* vm) {
     vm->fp = 0;
     vm->stack = stack_init();
     vm->function_addresses = insert_table_init();
+    vm->function_arities = insert_table_init();
 }
 
 #define NEXT() (DPRINT("%d ", vm->data[vm->ip]), vm->data[vm->ip++])
@@ -85,6 +86,11 @@ void run(struct VM* vm, char* data, int length) {
             vm->fp = vm->stack->size - args;
             vm->args = args;
             vm->ip = insert_table_lookup(vm->function_addresses, str);
+            int arity = insert_table_lookup(vm->function_arities, str);
+            if (arity != args) {
+                printf("Wrong number of arguments to function %s. Expected %d, got %d\n", str, arity, args);
+                assert(0);
+            }
             assert(vm->ip != 0);
             stack_push(vm->stack, jlisp_uint48(ip));
             stack_push(vm->stack, jlisp_uint48(fp));
@@ -116,8 +122,10 @@ void run(struct VM* vm, char* data, int length) {
         case FUNCTION: {
             char* str;
             next_string1(vm, &str);
+            int arity = NEXT();
             int bytes = NEXT();
             insert_table_add(vm->function_addresses, str, vm->ip);
+            insert_table_add(vm->function_arities, str, arity);
             vm->ip += bytes;
             break;
         }
