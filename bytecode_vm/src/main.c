@@ -80,4 +80,15 @@ int main() {
     };
     run(&vm, data3, 29);
 
+    // (if 1 2 3)
+    char data4[] = {
+        1, 1, // load 1
+        9, 4, // JMPF [+4]
+        1, 2, // load 2
+        8, 2, // JMP 2
+        1, 3, // load 3
+        3 // end
+    };
+    run(&vm, data4, 11);
+
 }

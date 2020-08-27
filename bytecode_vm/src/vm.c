@@ -122,6 +122,28 @@ void run(struct VM* vm, char* data, int length) {
             break;
         }
 
+        case JMP: {
+            int jmp = NEXT();
+            vm->ip += jmp;
+            break;
+        }
+        case JMPF: {
+            jlisp_type value = stack_pop(vm->stack);
+            int jmp = NEXT();
+            if (is_jlisp_nil(value) || is_jlisp_false(value)) {
+                vm->ip += jmp;
+            }
+            break;
+        }
+        case JMPT: {
+            jlisp_type value = stack_pop(vm->stack);
+            int jmp = NEXT();
+            if (!(is_jlisp_nil(value) || is_jlisp_false(value))) {
+                vm->ip += jmp;
+            }
+            break;
+        }
+
         }
         DPRINT("\n");
     }
