@@ -18,14 +18,13 @@
 (def toks (load-tokenlist))
 (defun emit-string-as-bytes (str)
   (def s "")
-  (map (fn (x) (string+= s (emit-lit out (char->int (string-at str x)))))
+  (map (fn (x) (string+= s (emit-lit (char->int (string-at str x)))))
        (iota (string-length str)))
   (string+ s (emit-lit 0)))
 
 
 (defun emit-lit (x)
   (cond
-    ((symbol? x) (throw "cannot emit symbol yet"))
     ((string? x)
      (string+
        (emit-lit (+ 1 (string-length x)))
@@ -33,10 +32,8 @@
     ((int? x) (if (or (< x 0) (> x 255))
                   (throw (string+ "cannot emit multibyte ints yet: " x))
                   (int->char x)))
-    ((true? x) (throw "cannot emit true yet"))
-    ((false? x) (throw "cannot emit false yet"))
     ((float? x) (throw "cannot emit floats yet"))
-    (true (throw "cannot emit unknown type"))))
+    (true (write x stderr) (throw "cannot emit unknown type"))))
 
 
 (defun emit-op (opcode . args)
@@ -47,10 +44,11 @@
 
 (defun emit-const (x)
   (cond
+    ((nil? x) (emit-op 'NIL))
     ((symbol? x) (throw "cannot emit symbol yet"))
     ((string? x) (emit-op 'STRING1 x))
     ((int? x) (emit-op 'INT1 x))
-    ((true? x) (throw "cannot emit true yet"))
-    ((false? x) (throw "cannot emit false yet"))
+    ((true? x) (emit-op 'TRUE))
+    ((false? x) (emit-op 'FALSE))
     ((float? x) (throw "cannot emit floats yet"))
     (true (println x) (throw "cannot emit unknown type"))))

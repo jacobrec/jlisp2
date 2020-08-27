@@ -96,9 +96,11 @@ $env.put(:"string->float", ->(env, args) {(args[1] ? -1 : 1) * args[0].to_f})
 $env.put(:"substring", ->(env, args) {args[2] ? args[0][args[1], args[2]] : args[0][args[1]..]})
 $env.put(:"string-split", ->(env, args) {args[0].split(args[1]).to_list})
 $env.put(:"string-join", ->(env, args) {args[1] ? args[0].to_array.join(args[1]) : args[0].to_array.join})
-$env.put(:"string->symbol", ->(env, args) {args[0].to_sym})
 $env.put(:"string-at", ->(env, args) {args[0][args[1]]})
 $env.put(:"string-length", ->(env, args) {args[0].length})
+
+$env.put(:"string->symbol", ->(env, args) {args[0].to_sym})
+$env.put(:"symbol->string", ->(env, args) {args[0].to_s})
 
 $env.put(:"char->int", ->(env, args) {args[0].ord})
 $env.put(:"int->char", ->(env, args) {args[0].chr})
