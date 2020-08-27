@@ -10,6 +10,17 @@ $env.put(:"write-byte", ->(env, args) {
              raise "#{args[0]} of type #{args[0].class} is not of type to write byte"
            end
 })
+$env.put(:"write-bytes", ->(env, args) {
+           dest = (args && args[1]) || STDOUT
+           if args[0].class == String
+             dest.print(args[0])
+           elsif args[0].class == List
+             raise "#{args[0]} of type #{args[0].class} is not of type to write-bytes"
+             dest.print(args[0].chr)
+           else
+             raise "#{args[0]} of type #{args[0].class} is not of type to write-bytes"
+           end
+})
 
 $env.put(:write, ->(env, args) {
            dest = (args && args[1]) || STDOUT

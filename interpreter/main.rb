@@ -119,7 +119,7 @@ $env.put(:eval, ->(env, args) {
 
 
 def ruby_load(file)
-  puts "loading #{file}"
+  #puts "loading #{file}"
   $env.put(:"$file", [file].to_list)
   f = File.open(file)
   loop do

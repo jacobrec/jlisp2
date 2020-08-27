@@ -1,49 +1,4 @@
-(println "Hello, World!")
-
-; relative open
-(defun ropen (relpath (for-writeing false))
-  (open (string+ (dir (current-file)) relpath) for-writeing))
-
-(defun load-tokenlist ()
-  (def file (ropen "/../tokens"))
-  (def items '())
-  (def i 0)
-  (defun loop ()
-    (def c (readline file))
-    (unless (= "" c)
-      (set items (acons (string->symbol c) i items))
-      (+= i 1)
-      (loop)))
-  (loop)
-  items)
-
-(def toks (load-tokenlist))
-(defun emit-string-as-bytes (out str)
-  (map (fn (x) (emit-lit out (char->int (string-at str x))))
-       (iota (string-length str)))
-  (emit-lit out 0))
-
-
-(defun emit-lit (out x)
-  (cond
-    ((string? x)
-     (emit-lit out (+ 1 (string-length x)))
-     (emit-string-as-bytes out x))
-    ((int? x) (if (or (< x 0) (> x 255))
-                  (throw (string+ "cannot emit multibyte ints yet: " x))
-                  (write-byte x out)))
-    ((float? x) (throw "cannot emit floats yet"))
-    (true (throw "cannot emit unknown type"))))
-
-
-(defun emit-op (out opcode . args)
-  (def byte-op (assoc-get opcode toks))
-  (write-byte byte-op out)
-  (map (fn (x) (emit-lit out x)) args))
-
-(def items toks)
-(println items)
-(emit-op (ropen "/../tmp" true) 'STRING1 "Hello")
+(require "./emitter.jsp")
 
 (defmacro push (val list)
   `(set ,list (cons ,val ,list)))
@@ -115,7 +70,7 @@
     (cond
       ((nil? form) nil)
       ((symbol? form) (if (includes? form special-forms)
-                          form
+                          (list 'form form)
                           form))
       ((not (list? form)) form)
       ((= 'quote (car form)) form)
@@ -152,8 +107,49 @@
     ((list? x) (map type-of x))
     (true "unknown")))
 
-(println (tag-function '(fn (x) x))) ; => LOCAL1 0; RETURN
-(println (tag-function '(fn (x) (if x (+ x y) 10))))
-(println (tag-function '(fn (a b c) (+ a b c))))
+;(println (tag-function '(fn (x) x))) ; => LOCAL1 0; RETURN
+;(println (tag-function '(fn (x) (if x (+ x y) 10))))
+;(println (tag-function '(fn (a b c) (+ a b c))))
 ;(println (macroexpand-all '(case 4 (1 'a) (2 'b) (3 'c) (4 'd) 5)))
-(println (map type-of '(if true (do (+ 1 2) (println "hello")) (or nil false 4.5))))
+;(println (map type-of '(if true (do (+ 1 2) (println "hello")) (or nil false 4.5))))
+
+
+(defun compile-if (sexp)
+  (def con (compile (second sexp)))
+  (def then (compile (third sexp)))
+  (def else (compile (fourth sexp)))
+  (string+
+   con
+   ;; JMPF [n] when n is the size of next compile + 2 (for the next jump)
+   (emit-op 'JMPF (+ 2 (string-length else)))
+   then
+   ;; JMP [n] when n is the size of next compile
+   (emit-op 'JMP (string-length else))
+   else))
+
+(defun compile (sexp)
+  (if (and_2 (list? sexp) (not (nil? sexp)))
+      (case (car sexp)
+        ('if (compile-if sexp))
+
+        ('quote (throw)) "compiler doesn't support quote yet"
+
+        ('def (throw "compiler doesn't support def yet"))
+
+        ('set (throw "compiler doesn't support set yet"))
+
+        ('let (throw "compiler doesn't support let yet"))
+
+        ('fn (throw "compiler doesn't support functions yet"))
+
+        ('macro (throw "compiler doesn't support macros yet"))
+
+        ('quasiquote (throw "compiler doesn't support quasiquote yet"))
+
+        (throw "compiler doesn't support function calls yet"))
+
+      (emit-const sexp)))
+
+(def output (ropen "/../tmp" true))
+
+(write-bytes (compile-if '(if 1 2 3)) stdout)
