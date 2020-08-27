@@ -111,6 +111,26 @@ $env.put(:"env-put", ->(env, args) {args[0].put args[1], args[2]})
 $env.put(:"env-get", ->(env, args) {args[0].get args[1]})
 $env.put(:"env-set", ->(env, args) {args[0].set args[1], args[2]})
 
+$env.put(:"random", ->(env, args) {
+           if args && (length args) == 2
+             v = args[0] + (rand) * (args[1] - args[0])
+             if args[0].integer? && args[1].integer?
+               v.to_i
+             else
+               v
+             end
+           elsif args && (length args) == 1
+             v = (rand) * args[0]
+             if args[0].integer?
+               v.to_i
+             else
+               v
+             end
+           else
+             rand
+           end
+         })
+
 $env.put(:stdout, STDOUT)
 $env.put(:stderr, STDERR)
 $env.put(:stdin,  STDIN)

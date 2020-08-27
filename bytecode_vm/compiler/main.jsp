@@ -6,44 +6,44 @@
 (def special-forms '(quote if def set let do fn macro))
 (defun free-vars (args bodies)
   (def free '())
-  (defun check-free (form)
-    (cond
-      ((nil? form) nil)
-      ((symbol? form)
-       (unless (includes? form args)
-         (push form free)))
-      ((not (list? form)) nil)
-      ((= 'quote (car form)) nil)
-      (true
-       (do (check-free (car form))
-           (check-free (cdr form))))))
-  (check-free bodies)
+  (defun walk (sexp)
+    (if (and_2 (list? sexp) (not (nil? sexp)))
+        (case (car sexp)
+          ('if `(if ,(walk (second sexp))
+                    ,(walk (third sexp))
+                    ,(walk (fourth sexp))))
+          ('quote sexp)
+          ('def `(def ,(second sexp) ,(walk (third sexp))))
+          ('set `(set ,(second sexp) ,(walk (third sexp))))
+          ('let `(let ,(walk (second sexp))
+                   ,@(map walk (cddr sexp))))
+          ('closure `(closure ,(second sexp) ,(walk (third sexp))))
+          ('fn `(fn ,(walk (second sexp))
+                   ,@(map walk (cddr sexp))))
+          ('macro `(macro ,(walk (second sexp)))
+                   ,@(map walk (cddr sexp)))
+          ('quasiquote (throw "quasiquote not supported"))
+          (map walk sexp)) ; funcalls
+        (cond
+          ((symbol? sexp)
+           (unless (or (includes? sexp args)
+                       (includes? sexp free))
+             (push sexp free)))
+          (true sexp))))  ; consts
+  (walk bodies)
   free)
 
-(defun tag-free (freelist bodies)
-  (defun check-free (form)
-    (cond
-      ((nil? form) nil)
-      ((symbol? form)
-       (aif (index-of form freelist)
-         (list 'free it)
-         form))
-      ((not (list? form)) form)
-      ((= 'quote (car form)) form)
-      ((= 'fn (car form)) form) ; TODO: deal with nested lambdas
-      (true
-       (cons (check-free (car form))
-             (check-free (cdr form))))))
-  (check-free bodies))
 
-(defun tag-locals (args bodies)
+(defun tag-locals (args free bodies)
   (defun check-local (form)
     (cond
       ((nil? form) nil)
       ((symbol? form)
        (aif (index-of form args)
-         (list 'local it)
-         form))
+            (list 'local it)
+            (aif (index-of form free)
+                 (list 'local (+ (length args) it))
+                 form)))
       ((not (list? form)) form)
       ((= 'quote (car form)) form)
       ((= 'fn (car form)) form) ; TODO: deal with nested lambdas
@@ -52,44 +52,13 @@
              (check-local (cdr form))))))
   (check-local bodies))
 
-(defun tag-constants (bodies)
-  (defun check-consts (form)
-    (cond
-      ((nil? form) nil)
-      ((symbol? form) form)
-      ((not (list? form)) (list 'const form))
-      ((= 'quote (car form)) form)
-      ((= 'fn (car form)) form) ; TODO: deal with nested lambdas
-      (true
-       (cons (check-consts (car form))
-             (check-consts (cdr form))))))
-  (check-consts bodies))
-
-(defun tag-forms (bodies)
-  (defun check-forms (form)
-    (cond
-      ((nil? form) nil)
-      ((symbol? form) (if (includes? form special-forms)
-                          (list 'form form)
-                          form))
-      ((not (list? form)) form)
-      ((= 'quote (car form)) form)
-      ((= 'fn (car form)) form) ; TODO: deal with nested lambdas
-      (true
-       (cons (check-forms (car form))
-             (check-forms (cdr form))))))
-  (check-forms bodies))
-
-(defun tag-function (form)
+(defun tag-function (add-lambda form)
   (assert= 'fn (first form))
   (def args (second form))
-  (def bodies (cddr form))
+  (def bodies (lift-lambdas (cddr form) add-lambda))
   (def free (free-vars args bodies))
   (def tagged-body
-      (tag-free free
-                (tag-locals args
-                            (tag-forms
-                             (tag-constants bodies)))))
+      (tag-locals args free bodies))
   (def info (acons 'free free
                    (acons 'body tagged-body
                           (acons 'arity (length (second form)) '()))))
@@ -136,10 +105,24 @@
 |#
 
 (defun gen-name (prefix)
-  (string+ prefix ";" "test"))
+  (string+ prefix ";"
+           (int->char (+ 97 (random 0 26)))
+           (int->char (+ 97 (random 0 26)))
+           (int->char (+ 97 (random 0 26)))
+           (int->char (+ 97 (random 0 26)))))
 
-(defun lift-lambdas (forms)
+(defun convert-closure (fun name)
+  (aif (assoc-get 'free (cdr fun))
+      (do
+       `(closure ,name ,it))
+      `(fn ,name)))
+
+;; TODO: nested lambdas
+(defun lift-lambdas (forms (lifter nil))
   (def lifted '())
+  (defun add-lambda (x)
+    (push x lifted))
+  (set lifter (or lifter add-lambda))
   (defun lift (sexp)
     (if (and_2 (list? sexp) (not (nil? sexp)))
         (case (car sexp)
@@ -152,17 +135,16 @@
           ('let `(let ,(lift (second sexp))
                    ,@(map lift (cddr sexp))))
           ('fn (do
-                (def fun (tag-function sexp))
+                (def fun (tag-function lifter sexp))
                 (def name (string->symbol (gen-name "fn")))
-                (push `(function ,name ,(cdr fun)) lifted)
-                `(fn ,name)))
+                (lifter `(function ,name ,(cdr fun)))
+                (convert-closure fun name)))
           ('macro sexp)
           ('quasiquote sexp)
           (map lift sexp)) ; funcalls
         sexp))  ; consts
   (def forms (map lift forms))
   (append lifted forms))
-
 
 (defun compile-if (sexp)
   (def con (compile (second sexp)))
@@ -186,6 +168,7 @@
   (def c-bodies (compile-forms bodies))
   (string+
     (emit-op 'FUNCTION (symbol->string name))
+    (emit-lit arity)
     (emit-lit (+ 1 (string-length c-bodies))) ; size of body
     c-bodies ; compiled bodies
     (emit-op 'RETURN)))
@@ -202,6 +185,12 @@
                (minus (length sexp) 1)
                (symbol->string (cadar sexp))))
      res)))
+
+(defun compile-tmp-plus (sexp)
+  (string+
+   (compile (second sexp))
+   (compile (third sexp))
+   (emit-op 'ADD)))
 
 (defun compile (sexp)
   (if (and_2 (list? sexp) (not (nil? sexp)))
@@ -229,9 +218,11 @@
 
 
 (def prog
-    '(((fn (x) x) 5)))
+    '(((fn (a b)
+        ((fn (x y) a) b 2))
+       5 6)))
 
 (pipe prog
       lift-lambdas
-      compile-forms
-      println)
+      ;compile-forms
+      (fn (x) (map println x)))
