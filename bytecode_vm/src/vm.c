@@ -23,11 +23,13 @@ void init_vm(struct VM* vm) {
     vm->fp = 0;
     vm->stack = stack_init();
     vm->function_addresses = insert_table_init();
-    vm->function_arities = insert_table_init();
 }
 
 #define NEXT() (DPRINT("%d ", vm->data[vm->ip]), vm->data[vm->ip++])
-// defines symbols chars and str
+#define POP() stack_pop(vm->stack)
+#define PUSH(val) stack_push(vm->stack, (val))
+
+// TODO: dont leak memory
 int next_string1(struct VM* vm, char** res) {
     int chars = NEXT();
     char* str = malloc(chars);
@@ -54,52 +56,51 @@ void run(struct VM* vm, char* data, int length) {
             char* str;
             next_string1(vm, &str);
             // TODO: strings are currently a memory leak
-            stack_push(vm->stack, jlisp_string(str));
+            PUSH(jlisp_string(str));
             break;
         }
 
         case INT1: {
-            stack_push(vm->stack, jlisp_int32(NEXT()));
+            PUSH(jlisp_int32(NEXT()));
             break;
         }
 
         case ADD: {
-            jlisp_type tl = stack_pop(vm->stack);
-            jlisp_type tr = stack_pop(vm->stack);
-            stack_push(vm->stack, jlisp_int32((tl.data & BITS32) + (tr.data & BITS32)));
+            jlisp_type tl = POP();
+            jlisp_type tr = POP();
+            PUSH(jlisp_int32((tl.data & BITS32) + (tr.data & BITS32)));
             break;
         }
 
         case END: {
-            jlisp_type t = stack_pop(vm->stack);
+            jlisp_type t = POP();
             printf("<<%s: [%s]>>\n", jlisp_typeof(t), jlisp_value_to_string(t));
             return;
         }
 
         case CALL: {
             int args = NEXT();
-            char* str;
-            next_string1(vm, &str);
+
+            jlisp_type fn_ptr = POP();
+            // TODO: check type, differnt things if closure
+
             int fp = vm->fp;
             int ip = vm->ip;
             int av = vm->args;
+
             vm->fp = vm->stack->size - args;
             vm->args = args;
-            vm->ip = insert_table_lookup(vm->function_addresses, str);
-            int arity = insert_table_lookup(vm->function_arities, str);
-            if (arity != args) {
-                printf("Wrong number of arguments to function %s. Expected %d, got %d\n", str, arity, args);
-                assert(0);
-            }
+            vm->ip = fn_ptr.data & BITS32;
+
             assert(vm->ip != 0);
-            stack_push(vm->stack, jlisp_uint48(ip));
-            stack_push(vm->stack, jlisp_uint48(fp));
-            stack_push(vm->stack, jlisp_uint48(av));
+            PUSH(jlisp_uint48(ip));
+            PUSH(jlisp_uint48(fp));
+            PUSH(jlisp_uint48(av));
             break;
         }
 
         case RETURN: {
-            jlisp_type return_value = stack_pop(vm->stack);
+            jlisp_type return_value = POP();
             jlisp_type ipd = vm->stack->data[vm->fp + vm->args];
             jlisp_type fpd = vm->stack->data[vm->fp + vm->args + 1];
             jlisp_type avd = vm->stack->data[vm->fp + vm->args + 2];
@@ -108,14 +109,14 @@ void run(struct VM* vm, char* data, int length) {
             vm->ip = ipd.data & BITS48;
             vm->args = avd.data & BITS48;
             printf("<<%s: [%s]>>\n", jlisp_typeof(return_value), jlisp_value_to_string(return_value));
-            stack_push(vm->stack, return_value);
+            PUSH(return_value);
 
             break;
         }
 
         case LOCAL: {
             int n = NEXT();
-            stack_push(vm->stack, vm->stack->data[vm->fp + n]);
+            PUSH(vm->stack->data[vm->fp + n]);
             break;
         }
 
@@ -125,7 +126,6 @@ void run(struct VM* vm, char* data, int length) {
             int arity = NEXT();
             int bytes = NEXT();
             insert_table_add(vm->function_addresses, str, vm->ip);
-            insert_table_add(vm->function_arities, str, arity);
             vm->ip += bytes;
             break;
         }
@@ -137,7 +137,7 @@ void run(struct VM* vm, char* data, int length) {
         }
 
         case JMPF: {
-            jlisp_type value = stack_pop(vm->stack);
+            jlisp_type value = POP();
             int jmp = NEXT();
             if (is_jlisp_nil(value) || is_jlisp_false(value)) {
                 DPRINT("[JUMPING %d]", jmp);
@@ -147,7 +147,7 @@ void run(struct VM* vm, char* data, int length) {
         }
 
         case JMPT: {
-            jlisp_type value = stack_pop(vm->stack);
+            jlisp_type value = POP();
             int jmp = NEXT();
             if (!(is_jlisp_nil(value) || is_jlisp_false(value))) {
                 vm->ip += jmp;
@@ -155,9 +155,24 @@ void run(struct VM* vm, char* data, int length) {
             break;
         }
 
-        case TRUE:  {stack_push(vm->stack, jlisp_true()); break;}
-        case FALSE: {stack_push(vm->stack, jlisp_false()); break;}
-        case NIL:   {stack_push(vm->stack, jlisp_nil()); break;}
+        case TRUE:  {PUSH(jlisp_true()); break;}
+        case FALSE: {PUSH(jlisp_false()); break;}
+        case NIL:   {PUSH(jlisp_nil()); break;}
+
+        case SYMBOL1: {
+            char* str;
+            next_string1(vm, &str);
+            PUSH(jlisp_symbol(str));
+            break;
+        }
+
+        case FUNCTION_POINTER: {
+            char* str;
+            next_string1(vm, &str);
+            uint32_t loc = insert_table_lookup(vm->function_addresses, str);
+            PUSH(jlisp_function(loc));
+            break;
+        }
 
         }
         DPRINT("\n");

@@ -117,6 +117,14 @@ $env.put(:eval, ->(env, args) {
 
 })
 
+def safe_eval(sexp, env)
+  begin
+    jcall([:eval, sexp], env)
+  rescue => e
+    puts "Ruby Error: " + e.message
+    exit(1)
+  end
+end
 
 def ruby_load(file)
   #puts "loading #{file}"
@@ -125,7 +133,7 @@ def ruby_load(file)
   loop do
     sexp = jcall([:read, f], $env)
     break if sexp == :EOF
-    x = jcall([:eval, sexp], $env)
+    x = safe_eval(sexp, $env)
   end
 end
 
@@ -149,7 +157,7 @@ elsif ARGV.length == 0
       puts "(exit 0)"
       break
     end
-    res = jcall([:eval, sexp], $env)
+    res = safe_eval(sexp, $env)
     print "=> "
     jcall([:writeln, res], $env)
   end

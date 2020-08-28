@@ -13,7 +13,6 @@ struct VM {
     uint32_t args; // number of args in current function
     uint32_t data_size;
     struct insert_table* function_addresses; // hashtable that maps names to addresses
-    struct insert_table* function_arities; // hashtable that maps names to arities
 };
 
 void init_vm(struct VM* vm);

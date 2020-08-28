@@ -222,7 +222,8 @@
         ((fn (x y) a) b 2))
        5 6)))
 
-(pipe prog
-      lift-lambdas
-      ;compile-forms
-      (fn (x) (map println x)))
+(pipe '(hello)
+      ;lift-lambdas
+      compile-forms
+      ;(fn (x) (map println x)))
+      println)

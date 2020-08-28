@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <assert.h>
 
+#include "symboltable.h"
 #include "types.h"
 #include "memory.h"
 
@@ -100,11 +101,22 @@ bool is_jlisp_uint48(jlisp_type data) {
 jlisp_type jlisp_int32(int32_t data) {
     jlisp_type t;
     uint32_t* d = &data;
-    t.data = TYPE(BITS_SIGNED_INT) | *d;
+    t.data = TYPE32(BITS_32_INT) | *d;
     return t;
 }
 bool is_jlisp_int32(jlisp_type data) {
-    return IS_TYPE(data.data, BITS_SIGNED_INT);
+    return IS_TYPE32(data.data, BITS_32_INT);
+}
+
+jlisp_type jlisp_symbol(char* sym) {
+    jlisp_type t;
+    uint32_t loc = intern_symbol(sym);
+    free(sym);
+    t.data = TYPE32(BITS_32_SYM) | loc;
+    return t;
+}
+bool is_jlisp_symbol(jlisp_type data) {
+    return IS_TYPE32(data.data, BITS_32_SYM);
 }
 
 jlisp_type jlisp_pointer(void* data) {
@@ -150,6 +162,8 @@ char* jlisp_typeof(jlisp_type t) {
         return "function";
     } else if (is_jlisp_pointer(t)) {
         return "pointer";
+    } else if (is_jlisp_symbol(t)) {
+        return "symbol";
     } else {
         return "double";
     }
@@ -173,6 +187,10 @@ char* jlisp_value_to_string(jlisp_type t) {
         return s;
     } else if (is_jlisp_string(t)) {
         return (char*)(t.data & BITS48);
+    } else if (is_jlisp_symbol(t)) {
+        char* s;
+        asprintf(&s, "sym:%u", t.data & BITS32);
+        return s;
     } else if (is_jlisp_cons(t)) {
         char* s;
         char* car = jlisp_value_to_string(jlisp_car(t));

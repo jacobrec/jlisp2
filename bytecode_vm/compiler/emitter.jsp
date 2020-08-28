@@ -45,7 +45,7 @@
 (defun emit-const (x)
   (cond
     ((nil? x) (emit-op 'NIL))
-    ((symbol? x) (throw "cannot emit symbol yet"))
+    ((symbol? x) (emit-op 'SYMBOL1 (symbol->string x)))
     ((string? x) (emit-op 'STRING1 x))
     ((int? x) (emit-op 'INT1 x))
     ((true? x) (emit-op 'TRUE))
