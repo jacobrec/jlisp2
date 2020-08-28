@@ -64,10 +64,12 @@ int main() {
     init_vm(&vm);
     // (+ 1 2)
     char data[] = {1, 1, 1, 2, 2, 3};
+    printf("Starting run 1\n");
     run(&vm, data, 6);
 
     // "hello"
     char data2[] = {0, 6, 72, 101, 108, 108, 111, 0, 3};
+    printf("Starting run 2\n");
     run(&vm, data2, 9);
 
     // ((fn (x y) (+ x y)) 40 9)
@@ -85,6 +87,7 @@ int main() {
                     // [4]^ call function named hello, with 2 args
                     3 // end
     };
+    printf("Starting run 3\n");
     run(&vm, data3, 31);
 
     // (if false "true" 'false)
@@ -96,6 +99,7 @@ int main() {
         0x0e, 0x06, 0x66, 0x61, 0x6C, 0x73, 0x65, 0x00, // load 'false
         0x03 // end
     };
+    printf("Starting run 4\n");
     run(&vm, data4, 21);
 
     // (if true "true" 'false)
@@ -107,6 +111,7 @@ int main() {
         0x0e, 0x06, 0x66, 0x61, 0x6C, 0x73, 0x65, 0x00, // load 'false
         0x03 // end
     };
+    printf("Starting run 5\n");
     run(&vm, data5, 21);
 
     // ((fn (x) x) 5)
@@ -120,6 +125,35 @@ int main() {
         0x04, 0x01, // call [n]
         0x03 // end
     };
+    printf("Starting run 6\n");
     run(&vm, data6, 30);
+
+
+    // ((fn (x) x) 5)
+    char data7[] = {
+        0x07, 0x05, 0x66, 0x71, 0x73, 0x6f, 0x00, // function
+        0x02, 0x12, // 2 args 0x12 byte body
+        0x06, 0x01, // local 1
+        0x01, 0x02, // int 2
+        0x06, 0x00, // local 0
+        0x0f, 0x05, 0x79, 0x6c, 0x67, 0x78, 0x00, // load function
+        0x10, 0x01, // make closure, 1 free
+        0x04, 0x02, // call 2 args
+        0x05, // return
+
+        0x07, 0x05, 0x79, 0x6c, 0x67, 0x78, 0x00, // function
+        0x02, 0x03, // 2 args, 3 byte body
+        0x06, 0x02, // local 2
+        0x05, // return
+
+        0x01, 0x05, // int 5
+        0x01, 0x06, // int 6
+        0x0f, 0x05, 0x66, 0x71, 0x73, 0x6f, 0x00, // load function
+        0x04, 0x02, // call 2 args
+        0x03 // end
+    };
+    printf("Starting run 7\n");
+    run(&vm, data7, 53);
+
 
 }

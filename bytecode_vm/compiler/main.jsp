@@ -104,12 +104,12 @@
       sexp))  ; consts
 |#
 
-(defun gen-name (prefix)
-  (string+ prefix ";"
-           (int->char (+ 97 (random 0 26)))
-           (int->char (+ 97 (random 0 26)))
-           (int->char (+ 97 (random 0 26)))
-           (int->char (+ 97 (random 0 26)))))
+(defun gen-name ()
+  (string+
+   (int->char (+ 97 (random 0 26)))
+   (int->char (+ 97 (random 0 26)))
+   (int->char (+ 97 (random 0 26)))
+   (int->char (+ 97 (random 0 26)))))
 
 (defun convert-closure (fun name)
   (aif (assoc-get 'free (cdr fun))
@@ -136,7 +136,7 @@
                    ,@(map lift (cddr sexp))))
           ('fn (do
                 (def fun (tag-function lifter sexp))
-                (def name (string->symbol (gen-name "fn")))
+                (def name (string->symbol (gen-name)))
                 (lifter `(function ,name ,(cdr fun)))
                 (convert-closure fun name)))
           ('macro sexp)
@@ -174,25 +174,25 @@
     (emit-op 'RETURN)))
 
 (defun compile-call (sexp)
-  (cond
-    ((and
-      (symbol? (cadar sexp))
-      (string-starts-with? (symbol->string (cadar sexp)) "fn;"))
-     (def res "")
-     (map (fn (x) (string+= res (compile x))) (cdr sexp))
-     (string+= res
-      (emit-op 'CALL
-               (minus (length sexp) 1)
-               (symbol->string (cadar sexp))))
-     res)))
+  (def res "")
+  (map (fn (x) (string+= res (compile x))) (cdr sexp))
+  (string+= res (compile (car sexp)))
+  (string+= res (emit-op 'CALL (minus (length sexp) 1)))
+  res)
 
-(defun compile-tmp-plus (sexp)
-  (string+
-   (compile (second sexp))
-   (compile (third sexp))
-   (emit-op 'ADD)))
+(defun compile-closure (sexp)
+  (def name (second sexp))
+  (def fun (compile `(fn ,name)))
+  (def frees (third sexp))
+  (def res "")
+  (map (fn (x) (string+= res (compile x))) frees) ;; add free variables
+  (string+= res fun)
+  (string+= res (emit-op 'MAKE_CLOSURE (length frees)))
+  res)
+
 
 (defun compile (sexp)
+  ;(println sexp)
   (if (and_2 (list? sexp) (not (nil? sexp)))
       (case (car sexp)
         ('if (compile-if sexp))
@@ -200,8 +200,9 @@
         ('def (throw "compiler doesn't support def yet"))
         ('set (throw "compiler doesn't support set yet"))
         ('let (throw "compiler doesn't support let yet"))
-        ('fn  (throw "compiler should have gotten rid of fn")) ; fn has been processed out to function
         ('function (compile-function sexp))
+        ('closure (compile-closure sexp))
+        ('fn  (emit-op 'FUNCTION_POINTER (symbol->string (second sexp)))) ; fn has been processed out to function fn is now always (fn fn;name)
         ('local (emit-op 'LOCAL (second sexp)))
         ('macro (throw "compiler doesn't support macros yet"))
         ('quasiquote (throw "compiler doesn't support quasiquote yet"))
@@ -222,8 +223,14 @@
         ((fn (x y) a) b 2))
        5 6)))
 
-(pipe '(hello)
-      ;lift-lambdas
+(defun printlines-and-pass (x)
+  (map println x)
+  x)
+(defun print-end (x)
+  (print x)
+  (print (emit-op 'END)))
+(pipe prog
+      lift-lambdas
+      ;printlines-and-pass
       compile-forms
-      ;(fn (x) (map println x)))
-      println)
+      print-end)

@@ -15,6 +15,10 @@ struct jlisp_cons_cell {
     jlisp_type cdr;
 };
 
+
+// closure is nested cons cell
+// (fn nfree . freeptr)
+
 #define BITS48 0xFFFFFFFFFFFFl
 #define BITS32 0xFFFFFFFFl
 #define BITS16 0xFFFFl

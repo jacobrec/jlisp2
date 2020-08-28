@@ -8,11 +8,11 @@
 #include "memory.h"
 
 jlisp_type jlisp_car_cdr(jlisp_type cons, bool iscar) {
-    if (is_jlisp_cons(cons)) {
+    if (is_jlisp_cons(cons) || is_jlisp_closure(cons)) {
         struct jlisp_cons_cell* cell = ((struct jlisp_cons_cell*) (cons.data & BITS48));
         return iscar ? cell->car : cell->cdr;
     } else {
-        printf("Cannot take %s of non cons", iscar ? "car" : "cdr");
+        printf("Cannot take %s of non cons\n", iscar ? "car" : "cdr");
         assert(0);
     }
 }
@@ -23,13 +23,9 @@ jlisp_type jlisp_cdr(jlisp_type cons) {
     jlisp_car_cdr(cons, false);
 }
 
-jlisp_type jlisp_closure(jlisp_type function, jlisp_type values) {
-    jlisp_type t = jlisp_allocate();
+jlisp_type jlisp_closure(jlisp_type function, jlisp_type nfree, jlisp_type freeptr) {
+    jlisp_type t = jlisp_cons(function, jlisp_cons(nfree, freeptr));
     uint64_t ptr = t.data & BITS48;
-
-    struct jlisp_cons_cell* cell = ((struct jlisp_cons_cell*) ptr);
-    cell->car = function;
-    cell->cdr = values;
     t.data = TYPE(BITS_CLOSURE) | ptr;
     return t;
 }

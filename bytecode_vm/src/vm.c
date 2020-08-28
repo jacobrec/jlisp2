@@ -80,17 +80,33 @@ void run(struct VM* vm, char* data, int length) {
 
         case CALL: {
             int args = NEXT();
-
             jlisp_type fn_ptr = POP();
-            // TODO: check type, differnt things if closure
-
             int fp = vm->fp;
             int ip = vm->ip;
             int av = vm->args;
 
-            vm->fp = vm->stack->size - args;
-            vm->args = args;
-            vm->ip = fn_ptr.data & BITS32;
+            if (is_jlisp_function(fn_ptr)) {
+                vm->fp = vm->stack->size - args;
+                vm->args = args;
+                vm->ip = fn_ptr.data & BITS32;
+            } else if (is_jlisp_closure(fn_ptr)) {
+                jlisp_type fun = jlisp_car(fn_ptr);
+                jlisp_type nfree = jlisp_car(jlisp_cdr(fn_ptr));
+                jlisp_type freeptr = jlisp_cdr(jlisp_cdr(fn_ptr));
+
+                int nfreeint = (uint64_t)(BITS48 & nfree.data);
+                args += nfreeint;
+                jlisp_type* ptr = (jlisp_type*) (freeptr.data & BITS48);
+                for (int i = 0; i < nfreeint; i++) {
+                    PUSH(ptr[i]);
+                }
+                vm->fp = vm->stack->size - args;
+                vm->args = args;
+                vm->ip = fun.data & BITS32;
+            } else {
+                printf("cannot call with type %s\n", jlisp_typeof(fn_ptr));
+                assert(0);
+            }
 
             assert(vm->ip != 0);
             PUSH(jlisp_uint48(ip));
@@ -171,6 +187,19 @@ void run(struct VM* vm, char* data, int length) {
             next_string1(vm, &str);
             uint32_t loc = insert_table_lookup(vm->function_addresses, str);
             PUSH(jlisp_function(loc));
+            break;
+        }
+
+        case MAKE_CLOSURE: {
+            uint64_t args = NEXT();
+            jlisp_type nfree = jlisp_uint48(args);
+            jlisp_type fn = POP();
+            jlisp_type* ptr = malloc(sizeof(jlisp_type) * args);
+            jlisp_type freeptr = jlisp_pointer(ptr);
+            for (int i = 0; i < args; i++) {
+                ptr[i] = POP();
+            }
+            PUSH(jlisp_closure(fn, nfree, freeptr));
             break;
         }
 
