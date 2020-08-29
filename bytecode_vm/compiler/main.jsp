@@ -220,7 +220,7 @@
       (emit-const sexp)))
 
 (defun compile-forms (lst)
-  (reduce (fn (x acc) (string+ acc (compile x))) lst ""))
+  (string-join (map compile lst) (emit-op 'POP)))
 
 ;(write-bytes (compile '(if 1 2 3)) stdout)
 
@@ -228,7 +228,9 @@
   (reduce (fn (x acc) (x acc)) fns var))
 
 
-(def prog '('(1 2 3)))
+(def prog '((if true 1 2)
+            (if true '(1 2) "1 2")
+            (if true nil false)))
 
 (defun printlines-and-pass (x)
   (map println x)

@@ -213,6 +213,12 @@ void run(struct VM* vm, char* data, int length) {
         case CAR: {PUSH(jlisp_car(POP())); break;}
         case CDR: {PUSH(jlisp_cdr(POP())); break;}
 
+        case POPSTACK: {
+            jlisp_type pval = POP();
+            printf("<<%s: [%s]>>", jlisp_typeof(pval), jlisp_value_to_string(pval));
+            break;
+        }
+
         }
         DPRINT("\n");
     }
