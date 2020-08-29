@@ -203,6 +203,16 @@ void run(struct VM* vm, char* data, int length) {
             break;
         }
 
+        case CONS: {
+            jlisp_type cdr = POP();
+            jlisp_type car = POP();
+            PUSH(jlisp_cons(car, cdr));
+            break;
+        }
+
+        case CAR: {PUSH(jlisp_car(POP())); break;}
+        case CDR: {PUSH(jlisp_cdr(POP())); break;}
+
         }
         DPRINT("\n");
     }

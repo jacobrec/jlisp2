@@ -205,7 +205,7 @@
   (if (and_2 (list? sexp) (not (nil? sexp)))
       (case (car sexp)
         ('if (compile-if sexp))
-        ('quote (throw "compiler doesn't support quote yet"))
+        ('quote (emit-const (second sexp)))
         ('def (throw "compiler doesn't support def yet"))
         ('set (throw "compiler doesn't support set yet"))
         ('let (throw "compiler doesn't support let yet"))
@@ -228,13 +228,7 @@
   (reduce (fn (x acc) (x acc)) fns var))
 
 
-(def prog '(
-            ((fn (x y)
-              (builtin
-                (LOCAL 0)
-                (LOCAL 1)
-                (ADD)))
-             40 9)))
+(def prog '('(1 2 3)))
 
 (defun printlines-and-pass (x)
   (map println x)
@@ -242,6 +236,7 @@
 (defun print-end (x)
   (print x)
   (print (emit-op 'END)))
+
 (pipe prog
       lift-lambdas
       ;printlines-and-pass

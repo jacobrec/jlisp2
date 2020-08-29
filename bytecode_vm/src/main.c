@@ -156,4 +156,16 @@ int main() {
     run(&vm, data7, 53);
 
 
+    // '(1 2 3)
+    char data8[] = {
+        0x01, 0x01, // int 1
+        0x01, 0x02, // int 2
+        0x01, 0x03, // int 3
+        0x0d,       // nil
+        0x11, 0x11, 0x11, // CONS, CONS, CONS
+        0x03 // end
+    };
+    printf("Starting run 8\n");
+    run(&vm, data8, 11);
+
 }

@@ -45,6 +45,7 @@
 (defun emit-const (x)
   (cond
     ((nil? x) (emit-op 'NIL))
+    ((list? x) (emit-list x))
     ((symbol? x) (emit-op 'SYMBOL1 (symbol->string x)))
     ((string? x) (emit-op 'STRING1 x))
     ((int? x) (emit-op 'INT1 x))
@@ -52,3 +53,12 @@
     ((false? x) (emit-op 'FALSE))
     ((float? x) (throw "cannot emit floats yet"))
     (true (println x) (throw "cannot emit unknown type"))))
+
+(defun emit-list (list)
+  (if (nil? list)
+      (emit-const nil)
+      (string+
+       (emit-const (car list))
+       (emit-list (cdr list))
+       (emit-op 'CONS))))
+
