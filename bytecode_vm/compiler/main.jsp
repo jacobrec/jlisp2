@@ -3,7 +3,7 @@
 (defmacro push (val list)
   `(set ,list (cons ,val ,list)))
 
-(def special-forms '(quote if def set let do fn macro))
+(def special-forms '(quote if def set let do fn macro builtin))
 (defun free-vars (args bodies)
   (def free '())
   (defun walk (sexp)
@@ -22,6 +22,7 @@
                    ,@(map walk (cddr sexp))))
           ('macro `(macro ,(walk (second sexp)))
                    ,@(map walk (cddr sexp)))
+          ('builtin sexp)
           ('quasiquote (throw "quasiquote not supported"))
           (map walk sexp)) ; funcalls
         (cond
@@ -38,7 +39,7 @@
   (defun check-local (form)
     (cond
       ((nil? form) nil)
-      ((symbol? form)
+      ((and_2 (symbol? form) (not (includes? form special-forms)))
        (aif (index-of form args)
             (list 'local it)
             (aif (index-of form free)
@@ -139,6 +140,7 @@
                 (def name (string->symbol (gen-name)))
                 (lifter `(function ,name ,(cdr fun)))
                 (convert-closure fun name)))
+          ('builtin sexp)
           ('macro sexp)
           ('quasiquote sexp)
           (map lift sexp)) ; funcalls
@@ -190,6 +192,13 @@
   (string+= res (emit-op 'MAKE_CLOSURE (length frees)))
   res)
 
+(defun compile-builtin (sexp)
+  (def forms (cdr sexp))
+  (reduce
+   (fn (x acc)
+       (string+ acc (eval `(emit-op ',(car x) ,@(cdr x)))))
+   forms
+   ""))
 
 (defun compile (sexp)
   ;(println sexp)
@@ -206,6 +215,7 @@
         ('local (emit-op 'LOCAL (second sexp)))
         ('macro (throw "compiler doesn't support macros yet"))
         ('quasiquote (throw "compiler doesn't support quasiquote yet"))
+        ('builtin (compile-builtin sexp))
         (compile-call sexp))
       (emit-const sexp)))
 
@@ -218,10 +228,13 @@
   (reduce (fn (x acc) (x acc)) fns var))
 
 
-(def prog
-    '(((fn (a b)
-        ((fn (x y) a) b 2))
-       5 6)))
+(def prog '(
+            ((fn (x y)
+              (builtin
+                (LOCAL 0)
+                (LOCAL 1)
+                (ADD)))
+             40 9)))
 
 (defun printlines-and-pass (x)
   (map println x)
